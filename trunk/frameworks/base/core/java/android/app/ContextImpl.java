@@ -92,6 +92,8 @@ import android.os.StatFs;
 import android.os.Vibrator;
 import android.os.FileUtils.FileStatus;
 import android.os.storage.StorageManager;
+import android.privacy.PrivacySettingsManager;
+import android.privacy.PrivacyTelephonyManager;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import android.text.ClipboardManager;
@@ -206,6 +208,7 @@ class ContextImpl extends Context {
     private UiModeManager mUiModeManager = null;
     private DownloadManager mDownloadManager = null;
     private NfcManager mNfcManager = null;
+    private PrivacySettingsManager mPrivacySettingsManager = null;
 
     private final Object mSync = new Object();
 
@@ -986,6 +989,8 @@ class ContextImpl extends Context {
             return getDownloadManager();
         } else if (NFC_SERVICE.equals(name)) {
             return getNfcManager();
+        } else if (PRIVACY_SERVICE.equals(name)) {
+            return getPrivacySettingsManager();
         }
 
         return null;
@@ -1094,7 +1099,7 @@ class ContextImpl extends Context {
     private TelephonyManager getTelephonyManager() {
         synchronized (mSync) {
             if (mTelephonyManager == null) {
-                mTelephonyManager = new TelephonyManager(getOuterContext());
+                mTelephonyManager = new PrivacyTelephonyManager(getOuterContext());
             }
         }
         return mTelephonyManager;
@@ -1164,6 +1169,15 @@ class ContextImpl extends Context {
         return mUsbManager;
     }
 
+    private PrivacySettingsManager getPrivacySettingsManager() {
+        synchronized (mSync) {
+            if (mPrivacySettingsManager == null) {
+                mPrivacySettingsManager = new PrivacySettingsManager();
+            }
+        }
+        return mPrivacySettingsManager;        
+    }
+    
     private Vibrator getVibrator() {
         synchronized (mSync) {
             if (mVibrator == null) {

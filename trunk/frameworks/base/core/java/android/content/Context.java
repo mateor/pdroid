@@ -1576,6 +1576,8 @@ public abstract class Context {
      * @hide
      */
     public static final String USB_SERVICE = "usb";
+    
+    public static final String PRIVACY_SERVICE = "privacy";
 
     /**
      * Determine whether the given permission is allowed for a particular

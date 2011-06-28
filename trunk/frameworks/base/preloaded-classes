@@ -487,6 +487,8 @@ android.provider.Settings$NameValueCache
 android.provider.Settings$NameValueTable
 android.provider.Settings$Secure
 android.provider.Settings$System
+android.privacy.PrivacySettingsManager
+android.privacy.PrivacySettings
 android.renderscript.RenderScript
 android.security.Md5MessageDigest
 android.security.MessageDigest
