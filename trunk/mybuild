@@ -1,0 +1,18 @@
+#!/bin/bash
+
+if [ -z $1 ]; then
+  echo "WARNING: No build path supplied!";
+else
+  echo "Setting up environment...";
+  source build/envsetup.sh
+  echo "Lunching option 1...";
+  lunch 1
+  echo "Building "$1" ...";
+  mmm -j32 $1
+  echo "Building system.img...";
+  make -j32 snod
+fi
+
+#echo "Copying Android 2.3 images to windows workspace...";
+#cp out/target/product/generic/*.img /mnt/hgfs/workspace/androidroms/android-2.3
+
