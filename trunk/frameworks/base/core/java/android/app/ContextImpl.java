@@ -989,7 +989,7 @@ class ContextImpl extends Context {
             return getDownloadManager();
         } else if (NFC_SERVICE.equals(name)) {
             return getNfcManager();
-        } else if (PRIVACY_SERVICE.equals(name)) {
+        } else if ("privacy".equals(name)) {
             return getPrivacySettingsManager();
         }
 
@@ -1172,7 +1172,7 @@ class ContextImpl extends Context {
     private PrivacySettingsManager getPrivacySettingsManager() {
         synchronized (mSync) {
             if (mPrivacySettingsManager == null) {
-                mPrivacySettingsManager = new PrivacySettingsManager();
+                mPrivacySettingsManager = new PrivacySettingsManager(this);
             }
         }
         return mPrivacySettingsManager;        

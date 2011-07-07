@@ -69,6 +69,7 @@ PRODUCT_PACKAGES := \
     PicoTts \
     SettingsProvider \
     TelephonyProvider \
+    TesterApp1 \
     TtsService \
     VpnServices \
     UserDictionaryProvider \

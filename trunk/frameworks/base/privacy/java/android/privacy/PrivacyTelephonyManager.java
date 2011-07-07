@@ -17,21 +17,34 @@
 package android.privacy;
 
 import android.content.Context;
+import android.os.Binder;
+import android.os.Process;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 
 public class PrivacyTelephonyManager extends TelephonyManager {
 
+    private static final String TAG = "PrivacyTelephonyManager";
     private Context mContext;
+    private PrivacySettingsManager mPrivSetManager;
 
     public PrivacyTelephonyManager(Context context) {
         super(context);
         mContext = context;
+        mPrivSetManager = new PrivacySettingsManager(mContext);
     }
     
     @Override
     public String getDeviceId() {
-        if (mContext.getPackageName().equals("com.tester.app1")) return "fake";
+        PrivacySettings pSettings = mPrivSetManager.getSettings(mContext.getPackageName(), Binder.getCallingUid());
+        String customId = pSettings.getDeviceId();
+        if (customId != null) return customId;
         return super.getDeviceId();
     }
     
+    @Override
+    public String getLine1Number() {
+        // TODO Auto-generated method stub
+        return super.getLine1Number();
+    }
 }
