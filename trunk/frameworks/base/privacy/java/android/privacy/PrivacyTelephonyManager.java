@@ -36,15 +36,23 @@ public class PrivacyTelephonyManager extends TelephonyManager {
     
     @Override
     public String getDeviceId() {
+        Log.d(TAG, "Device ID request from package: " + mContext.getPackageName() + " UID: " + Binder.getCallingUid());
         PrivacySettings pSettings = mPrivSetManager.getSettings(mContext.getPackageName(), Binder.getCallingUid());
-        String customId = pSettings.getDeviceId();
-        if (customId != null) return customId;
+        if (pSettings != null) {
+            String customId = pSettings.getDeviceId();
+            if (customId != null) return customId;
+        }
         return super.getDeviceId();
     }
     
     @Override
     public String getLine1Number() {
-        // TODO Auto-generated method stub
+        Log.d(TAG, "Phone number request from package: " + mContext.getPackageName() + " UID: " + Binder.getCallingUid());
+        PrivacySettings pSettings = mPrivSetManager.getSettings(mContext.getPackageName(), Binder.getCallingUid());
+        if (pSettings != null) {
+            String customLineNumber = pSettings.getLine1Number();
+            if (customLineNumber != null) return customLineNumber;
+        }
         return super.getLine1Number();
     }
 }

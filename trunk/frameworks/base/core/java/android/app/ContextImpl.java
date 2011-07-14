@@ -1172,7 +1172,7 @@ class ContextImpl extends Context {
     private PrivacySettingsManager getPrivacySettingsManager() {
         synchronized (mSync) {
             if (mPrivacySettingsManager == null) {
-                mPrivacySettingsManager = new PrivacySettingsManager(this);
+                mPrivacySettingsManager = new PrivacySettingsManager(getOuterContext());
             }
         }
         return mPrivacySettingsManager;        

@@ -66,6 +66,7 @@ PRODUCT_PACKAGES := \
     DownloadProvider \
     DownloadProviderUi \
     MediaProvider \
+    PDroid \
     PicoTts \
     SettingsProvider \
     TelephonyProvider \

@@ -1,6 +1,12 @@
 package android.privacy;
 
-public class PrivacySettings {
+import java.io.Serializable;
+
+public class PrivacySettings implements Serializable {
+    
+    private static final long serialVersionUID = -5985415481586295138L;
+
+    private final Integer _id;
     
     private String packageName;
     private int uid;
@@ -8,11 +14,20 @@ public class PrivacySettings {
     private String deviceId;
     private String line1Number;
     
-    public PrivacySettings(String packageName, int uid, String deviceId, String line1Number) {
+    public PrivacySettings(Integer _id, String packageName, int uid, String deviceId, String line1Number) {
+        this._id = _id;
+        
         this.packageName = packageName;
         this.uid = uid;
+        
         this.deviceId = deviceId;
         this.line1Number = line1Number;
+    }
+    
+    
+    
+    public Integer get_id() {
+        return _id;
     }
 
     public String getPackageName() {
