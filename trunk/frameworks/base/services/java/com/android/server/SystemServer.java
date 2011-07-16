@@ -42,6 +42,7 @@ import android.os.ServiceManager;
 import android.os.StrictMode;
 import android.os.SystemClock;
 import android.os.SystemProperties;
+import android.privacy.PrivacySettingsManagerService;
 import android.provider.Contacts.People;
 import android.provider.Settings;
 import android.server.BluetoothA2dpService;
@@ -442,6 +443,13 @@ class ServerThread extends Thread {
                 ServiceManager.addService("diskstats", new DiskStatsService(context));
             } catch (Throwable e) {
                 Slog.e(TAG, "Failure starting DiskStats Service", e);
+            }
+            
+            try {
+                Slog.i(TAG, "Privacy Service");
+                ServiceManager.addService("privacy", new PrivacySettingsManagerService(context));
+            } catch (Throwable e) {
+                Slog.e(TAG, "Failure starting Privacy Service", e);
             }
         }
 

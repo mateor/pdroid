@@ -1,10 +1,9 @@
 package android.privacy;
 
-import java.io.Serializable;
+import android.os.Parcel;
+import android.os.Parcelable;
 
-public class PrivacySettings implements Serializable {
-    
-    private static final long serialVersionUID = -5985415481586295138L;
+public class PrivacySettings implements Parcelable {
 
     private final Integer _id;
     
@@ -23,8 +22,6 @@ public class PrivacySettings implements Serializable {
         this.deviceId = deviceId;
         this.line1Number = line1Number;
     }
-    
-    
     
     public Integer get_id() {
         return _id;
@@ -60,6 +57,55 @@ public class PrivacySettings implements Serializable {
     
     public void setLine1Number(String line1Number) {
         this.line1Number = line1Number;
+    }
+
+    @Override
+    public String toString() {
+        return "PrivacySettings [_id=" + _id + ", deviceId=" + deviceId + ", line1Number=" + line1Number
+                + ", packageName=" + packageName + ", uid=" + uid + "]";
+    }
+
+    /**
+     * Parcelable implementation
+     */
+
+
+    public static final Parcelable.Creator<PrivacySettings> CREATOR = new
+            Parcelable.Creator<PrivacySettings>() {
+                public PrivacySettings createFromParcel(Parcel in) {
+                    return new PrivacySettings(in);
+                }
+
+                public PrivacySettings[] newArray(int size) {
+                    return new PrivacySettings[size];
+                }
+            };
+    
+    public PrivacySettings(Parcel in) {
+        int _id = in.readInt();
+        this._id = (_id == -1) ? null : _id;
+        
+        this.packageName = in.readString();
+        this.uid = in.readInt();
+        
+        this.deviceId = in.readString();
+        this.line1Number = in.readString();
+    }
+    
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt((_id == null) ? -1 : _id);
+        
+        dest.writeString(packageName);
+        dest.writeInt(uid);
+        
+        dest.writeString(deviceId);
+        dest.writeString(line1Number);
+    }
+    
+    @Override
+    public int describeContents() {
+        return 0;
     }
     
 }

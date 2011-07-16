@@ -92,6 +92,7 @@ import android.os.StatFs;
 import android.os.Vibrator;
 import android.os.FileUtils.FileStatus;
 import android.os.storage.StorageManager;
+import android.privacy.IPrivacySettingsManager;
 import android.privacy.PrivacySettingsManager;
 import android.privacy.PrivacyTelephonyManager;
 import android.provider.Settings;
@@ -1172,7 +1173,9 @@ class ContextImpl extends Context {
     private PrivacySettingsManager getPrivacySettingsManager() {
         synchronized (mSync) {
             if (mPrivacySettingsManager == null) {
-                mPrivacySettingsManager = new PrivacySettingsManager(getOuterContext());
+                IBinder b = ServiceManager.getService("privacy");
+                IPrivacySettingsManager service = IPrivacySettingsManager.Stub.asInterface(b);
+                mPrivacySettingsManager = new PrivacySettingsManager(getOuterContext(), service);
             }
         }
         return mPrivacySettingsManager;        

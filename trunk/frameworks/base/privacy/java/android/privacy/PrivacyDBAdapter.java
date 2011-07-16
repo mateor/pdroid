@@ -3,8 +3,10 @@ package android.privacy;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Binder;
 import android.util.Log;
 
 import java.io.File;
@@ -28,7 +30,8 @@ public class PrivacyDBAdapter {
     public PrivacyDBAdapter(Context context) {
         // check write permission for /data/system/
         boolean canWrite = new File("/data/system/").canWrite();
-        Log.d(TAG, "Write permission for /data/system/: " + canWrite);
+        Log.d(TAG, "Constructing " + TAG + " for package: " +  context.getPackageName() + 
+                " UID: " + Binder.getCallingUid() + "; Write permission for /data/system/: " + canWrite);
         // create the database if we have write permission and the DB does not exist
         if (canWrite && !new File(DATABASE_NAME).exists()) {
             Log.d(TAG, "Creating privacy.db in /data/system; FLags: OPEN_READWRITE CREATE_IF_NECESSARY");
@@ -82,19 +85,19 @@ public class PrivacyDBAdapter {
             if (c != null) c.close();
             if (db != null) db.close();
         }
-
+        
+        Log.d(TAG, "getSettings: returning settings: " + s);
         return s;
     }
 
-    public boolean saveSettings(PrivacySettings s) throws InsufficientAppIdentifierException {
+    public boolean saveSettings(PrivacySettings s) {
         boolean result = false;
-        // throw an exception if either package name or UID or both is not supplied
-        // both are required for positive identification of an application
         String packageName = s.getPackageName();
         Integer uid = s.getUid();
-        Log.d(TAG, "saveSettings: settings save request for package: " + packageName + " UID: " + uid);
+        Log.d(TAG, "saveSettings: settings save request : " + s);
         if (packageName == null || packageName.isEmpty() || uid == null) {
-            throw new InsufficientAppIdentifierException("Either package name, UID or both is missing.");
+            Log.e(TAG, "Either package name, UID or both is missing.");
+            return result;
         }
 
         Log.d(TAG, "saveSettings: opening database in writable mode");

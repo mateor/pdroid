@@ -18,7 +18,6 @@ package android.privacy;
 
 import android.content.Context;
 import android.os.Binder;
-import android.os.Process;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
@@ -31,7 +30,7 @@ public class PrivacyTelephonyManager extends TelephonyManager {
     public PrivacyTelephonyManager(Context context) {
         super(context);
         mContext = context;
-        mPrivSetManager = new PrivacySettingsManager(mContext);
+        mPrivSetManager = (PrivacySettingsManager) context.getSystemService("privacy");
     }
     
     @Override
