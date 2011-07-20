@@ -3,7 +3,6 @@ package android.privacy;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Binder;
@@ -21,9 +20,26 @@ public class PrivacyDBAdapter {
 
     private static final int DATABASE_VERSION = 1;
 
-    private static final String DATABASE_CREATE = "CREATE TABLE IF NOT EXISTS " + DATABASE_TABLE + " ( "
-            + " _id INTEGER PRIMARY KEY AUTOINCREMENT, " + " packageName TEXT, " + " uid INTEGER, "
-            + " deviceId TEXT, " + " line1Number TEXT);";
+    private static final String DATABASE_CREATE = 
+            "CREATE TABLE IF NOT EXISTS " + DATABASE_TABLE + " ( " + 
+            " _id INTEGER PRIMARY KEY AUTOINCREMENT, " + 
+            " packageName TEXT, " + 
+            " uid INTEGER, " + 
+            " deviceIdSetting INTEGER, " + 
+            " deviceId TEXT, " + 
+            " line1NumberSetting INTEGER, " + 
+            " line1Number TEXT, " + 
+            " locationGpsSetting INTEGER, " + 
+            " locationGpsLat TEXT, " + 
+            " locationGpsLon TEXT, " + 
+            " locationNetworkSetting INTEGER, " + 
+            " locationNetworkLat TEXT, " + 
+            " locationNetworkLon TEXT" + 
+            ");";
+    
+    private static final String[] DATABASE_FIELDS = new String[] { "_id", "packageName", "uid", 
+        "deviceIdSetting", "deviceId", "line1NumberSetting", "line1Number", "locationGpsSetting", 
+        "locationGpsLat", "locationGpsLon", "locationNetworkSetting", "locationNetworkLat", "locationNetworkLon" };
 
     private SQLiteDatabase db;
 
@@ -33,14 +49,7 @@ public class PrivacyDBAdapter {
         Log.d(TAG, "Constructing " + TAG + " for package: " +  context.getPackageName() + 
                 " UID: " + Binder.getCallingUid() + "; Write permission for /data/system/: " + canWrite);
         // create the database if we have write permission and the DB does not exist
-        if (canWrite && !new File(DATABASE_NAME).exists()) {
-            Log.d(TAG, "Creating privacy.db in /data/system; FLags: OPEN_READWRITE CREATE_IF_NECESSARY");
-            SQLiteDatabase db = getWritableDatabase();
-            Log.d(TAG, "PrivacyDBAdapter: Executing database create statement on privacy.db");
-            db.execSQL(DATABASE_CREATE);
-            Log.d(TAG, "PrivacyDBAdapter: Closing connection to privacy.db");
-            db.close();
-        }        
+        if (canWrite && !new File(DATABASE_NAME).exists()) createDatabase();
     }
 
     public PrivacySettings getSettings(String packageName, int uid) {
@@ -53,8 +62,7 @@ public class PrivacyDBAdapter {
         try {
             // try to get settings based on package name only first; some system applications
             // (e.g., HTC Settings) run with a different UID than reported by package manager
-            c = db.query(DATABASE_TABLE, new String[] { "_id", "packageName", "uid",
-                    "deviceId", "line1Number" }, "packageName=?", new String[] { packageName }, null, null, null);
+            c = db.query(DATABASE_TABLE, DATABASE_FIELDS, "packageName=?", new String[] { packageName }, null, null, null);
 
             if (c != null) {
                 if (c.getCount() > 1) {
@@ -63,13 +71,13 @@ public class PrivacyDBAdapter {
                     Log.d(TAG, "getSettings: multiple settings entries found for package name: " + packageName
                             + "; trying with UID: " + uid);
 
-                    c = db.query(DATABASE_TABLE,
-                            new String[] { "_id", "packageName", "uid", "deviceId", "line1Number" },
+                    c = db.query(DATABASE_TABLE, DATABASE_FIELDS, 
                             "packageName=? AND uid=?", new String[] { packageName, uid + "" }, null, null, null);
                 }
-
                 if (c.getCount() == 1 && c.moveToFirst()) {
-                    s = new PrivacySettings(c.getInt(0), c.getString(1), c.getInt(2), c.getString(3), c.getString(4));
+                    s = new PrivacySettings(c.getInt(0), c.getString(1), c.getInt(2), (byte)c.getShort(3), c.getString(4), 
+                            (byte)c.getShort(5), c.getString(6), (byte)c.getShort(7), c.getString(8), c.getString(9), (byte)c.getShort(10), 
+                            c.getString(11), c.getString(12));
                     Log.d(TAG, "getSettings: found settings entry for package: " + packageName + " UID: " + uid);
                 } else if (c.getCount() > 1) {
                     // multiple settings entries have same package name AND UID, this should NEVER happen
@@ -95,6 +103,7 @@ public class PrivacyDBAdapter {
         String packageName = s.getPackageName();
         Integer uid = s.getUid();
         Log.d(TAG, "saveSettings: settings save request : " + s);
+        
         if (packageName == null || packageName.isEmpty() || uid == null) {
             Log.e(TAG, "Either package name, UID or both is missing.");
             return result;
@@ -107,8 +116,19 @@ public class PrivacyDBAdapter {
         values.put("packageName", packageName);
         values.put("uid", uid);
         
+        values.put("deviceIdSetting", s.getDeviceIdSetting());
         values.put("deviceId", s.getDeviceId());
+        
+        values.put("line1NumberSetting", s.getLine1NumberSetting());
         values.put("line1Number", s.getLine1Number());
+        
+        values.put("locationGpsSetting", s.getLocationGpsSetting());
+        values.put("locationGpsLat", s.getLocationGpsLat());
+        values.put("locationGpsLon", s.getLocationGpsLon());
+        
+        values.put("locationNetworkSetting", s.getLocationNetworkSetting());
+        values.put("locationNetworkLat", s.getLocationNetworkLat());
+        values.put("locationNetworkLon", s.getLocationNetworkLon());        
 
         Log.d(TAG, "saveSettings: checking if entry exists already.");
         Cursor c = null;
@@ -152,8 +172,20 @@ public class PrivacyDBAdapter {
 
         return result;
     }
-
+    
+    private void createDatabase() {
+        Log.d(TAG, "Creating privacy.db in /data/system; Flags: OPEN_READWRITE CREATE_IF_NECESSARY");
+        SQLiteDatabase db = 
+            SQLiteDatabase.openDatabase(DATABASE_NAME, null, SQLiteDatabase.OPEN_READWRITE | SQLiteDatabase.CREATE_IF_NECESSARY);
+        Log.d(TAG, "PrivacyDBAdapter: Executing database create statement on privacy.db");
+        db.execSQL(DATABASE_CREATE);
+        Log.d(TAG, "PrivacyDBAdapter: Closing connection to privacy.db");
+        db.close();
+    }
+    
     private synchronized SQLiteDatabase getReadableDatabase() {
+        if (!new File(DATABASE_NAME).exists()) createDatabase();
+        
         if (db != null && db.isOpen() && db.isReadOnly()) {
             return db;
         }
@@ -165,69 +197,15 @@ public class PrivacyDBAdapter {
     }
 
     private synchronized SQLiteDatabase getWritableDatabase() {
+        if (!new File(DATABASE_NAME).exists()) createDatabase();
+        
         if (db != null && db.isOpen() && !db.isReadOnly()) {
             return db;
         }
-
-        SQLiteDatabase db = SQLiteDatabase.openDatabase(DATABASE_NAME, null, SQLiteDatabase.OPEN_READWRITE
-                | SQLiteDatabase.CREATE_IF_NECESSARY);
+        
+        SQLiteDatabase db = SQLiteDatabase.openDatabase(DATABASE_NAME, null, SQLiteDatabase.OPEN_READWRITE);
         this.db = db;
 
         return this.db;
-    }
-
-    public String dbTest() {
-
-        Log.d(TAG, "Inserting test entry");
-
-        SQLiteDatabase db = null;
-        try {
-            db = getWritableDatabase();
-            if (db.isDbLockedByOtherThreads())
-                return "DB locked by others";
-            if (db.isDbLockedByCurrentThread())
-                return "DB locked by me";
-            if (db.isReadOnly())
-                return "DB is READONLY";
-            db.delete("settings", null, null);
-
-            ContentValues values = new ContentValues();
-            values.put("packageName", "com.tester.app1");
-            values.put("deviceId", "1336");
-            values.put("line1Number", "017678021324");
-            db.insert("settings", null, values);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        db.close();
-
-        Log.d(TAG, "Querying DB");
-
-        Cursor c = null;
-        String output = "";
-        try {
-            db = getReadableDatabase();
-            c = db.query("settings", new String[] {
-                    "packageName", "deviceId", "line1Number"
-            }, null, null, null, null, null);
-
-            Log.d(TAG, "Collecting results");
-
-            if (c != null && c.getCount() > 0) {
-                while (c.moveToNext()) {
-                    output += c.getString(0) + " " + c.getString(1) + " " + c.getString(2) + " | ";
-                }
-            } else {
-                output = "No results";
-            }
-
-            db.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        Log.d(TAG, "dbTest: output: " + output);
-
-        return output;
     }
 }

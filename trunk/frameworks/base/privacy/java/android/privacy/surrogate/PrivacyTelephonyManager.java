@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-package android.privacy;
+package android.privacy.surrogate;
 
 import android.content.Context;
 import android.os.Binder;
+import android.privacy.PrivacySettings;
+import android.privacy.PrivacySettingsManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
@@ -36,22 +38,28 @@ public class PrivacyTelephonyManager extends TelephonyManager {
     @Override
     public String getDeviceId() {
         Log.d(TAG, "Device ID request from package: " + mContext.getPackageName() + " UID: " + Binder.getCallingUid());
-        PrivacySettings pSettings = mPrivSetManager.getSettings(mContext.getPackageName(), Binder.getCallingUid());
-        if (pSettings != null) {
-            String customId = pSettings.getDeviceId();
-            if (customId != null) return customId;
+        PrivacySettings pSet = mPrivSetManager.getSettings(mContext.getPackageName(), Binder.getCallingUid());
+        String output;
+        if (pSet != null && pSet.getDeviceIdSetting() != PrivacySettings.REAL) {
+            output = pSet.getDeviceId(); // can be empty, custom or random
+        } else {
+            output = super.getDeviceId();
         }
-        return super.getDeviceId();
+        Log.d(TAG, "Device ID output: " + output);
+        return output;
     }
     
     @Override
     public String getLine1Number() {
         Log.d(TAG, "Phone number request from package: " + mContext.getPackageName() + " UID: " + Binder.getCallingUid());
-        PrivacySettings pSettings = mPrivSetManager.getSettings(mContext.getPackageName(), Binder.getCallingUid());
-        if (pSettings != null) {
-            String customLineNumber = pSettings.getLine1Number();
-            if (customLineNumber != null) return customLineNumber;
+        PrivacySettings pSet = mPrivSetManager.getSettings(mContext.getPackageName(), Binder.getCallingUid());
+        String output;
+        if (pSet != null && pSet.getDeviceIdSetting() != PrivacySettings.REAL) {
+            output = pSet.getLine1Number(); // can be empty, custom or random
+        } else {
+            output = super.getLine1Number();
         }
-        return super.getLine1Number();
+        Log.d(TAG, "Phone number output: " + output);
+        return output;
     }
 }

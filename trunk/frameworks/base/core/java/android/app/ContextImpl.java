@@ -94,7 +94,8 @@ import android.os.FileUtils.FileStatus;
 import android.os.storage.StorageManager;
 import android.privacy.IPrivacySettingsManager;
 import android.privacy.PrivacySettingsManager;
-import android.privacy.PrivacyTelephonyManager;
+import android.privacy.surrogate.PrivacyLocationManager;
+import android.privacy.surrogate.PrivacyTelephonyManager;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import android.text.ClipboardManager;
@@ -1121,7 +1122,7 @@ class ContextImpl extends Context {
             if (sLocationManager == null) {
                 IBinder b = ServiceManager.getService(LOCATION_SERVICE);
                 ILocationManager service = ILocationManager.Stub.asInterface(b);
-                sLocationManager = new LocationManager(service);
+                sLocationManager = new PrivacyLocationManager(service, getOuterContext());
             }
         }
         return sLocationManager;

@@ -445,12 +445,8 @@ class ServerThread extends Thread {
                 Slog.e(TAG, "Failure starting DiskStats Service", e);
             }
             
-            try {
-                Slog.i(TAG, "Privacy Service");
-                ServiceManager.addService("privacy", new PrivacySettingsManagerService(context));
-            } catch (Throwable e) {
-                Slog.e(TAG, "Failure starting Privacy Service", e);
-            }
+            addPrivacyService(context);
+
         }
 
         // make sure the ADB_ENABLED setting value matches the secure property value
@@ -549,6 +545,15 @@ class ServerThread extends Thread {
 
         Looper.loop();
         Slog.d(TAG, "System ServerThread is exiting!");
+    }
+    
+    private void addPrivacyService(Context context) {
+        try {
+            Slog.i(TAG, "Privacy Service");
+            ServiceManager.addService("privacy", new PrivacySettingsManagerService(context));
+        } catch (Throwable e) {
+            Slog.e(TAG, "Failure starting Privacy Service", e);
+        }        
     }
 }
 

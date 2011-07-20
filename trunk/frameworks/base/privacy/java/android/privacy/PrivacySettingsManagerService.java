@@ -2,6 +2,7 @@
 package android.privacy;
 
 import android.content.Context;
+import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -12,6 +13,8 @@ public class PrivacySettingsManagerService extends IPrivacySettingsManager.Stub 
     private PrivacyDBAdapter DBAdapter;
 
     private Context mContext;
+    
+    private static final String WRITE_PRIVACY_SETTINGS = "android.privacy.WRITE_PRIVACY_SETTINGS";    
     
     /**
      * @hide - this should be instantiated through Context.getSystemService
@@ -29,6 +32,8 @@ public class PrivacySettingsManagerService extends IPrivacySettingsManager.Stub 
     }
 
     public boolean saveSettings(PrivacySettings settings) {
+        Log.d(TAG, "saveSettings: checking if caller (UID: " + Binder.getCallingUid() + ") has sufficient permissions");
+        mContext.enforceCallingPermission(WRITE_PRIVACY_SETTINGS, "Requires WRITE_PRIVACY_SETTINGS");
         Log.d(TAG, "saveSettings: " + settings);
         return DBAdapter.saveSettings(settings);
     }
