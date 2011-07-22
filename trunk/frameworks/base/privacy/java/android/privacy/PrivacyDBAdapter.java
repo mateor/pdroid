@@ -34,12 +34,15 @@ public class PrivacyDBAdapter {
             " locationGpsLon TEXT, " + 
             " locationNetworkSetting INTEGER, " + 
             " locationNetworkLat TEXT, " + 
-            " locationNetworkLon TEXT" + 
+            " locationNetworkLon TEXT, " + 
+            " networkInfoSetting INTEGER, " + 
+            " simInfoSetting INTEGER" + 
             ");";
     
     private static final String[] DATABASE_FIELDS = new String[] { "_id", "packageName", "uid", 
         "deviceIdSetting", "deviceId", "line1NumberSetting", "line1Number", "locationGpsSetting", 
-        "locationGpsLat", "locationGpsLon", "locationNetworkSetting", "locationNetworkLat", "locationNetworkLon" };
+        "locationGpsLat", "locationGpsLon", "locationNetworkSetting", "locationNetworkLat", 
+        "locationNetworkLon", "networkInfoSetting", "simInfoSetting" };
 
     private SQLiteDatabase db;
 
@@ -55,7 +58,7 @@ public class PrivacyDBAdapter {
     public PrivacySettings getSettings(String packageName, int uid) {
         Log.d(TAG, "getSettings: settings request for package: " + packageName + " UID: " + uid);
         PrivacySettings s = null;
-        Log.d(TAG, "getSettings: opening database in readable mode");
+//        Log.d(TAG, "getSettings: opening database in readable mode");
         SQLiteDatabase db = getReadableDatabase();
         Cursor c = null;
 
@@ -77,7 +80,7 @@ public class PrivacyDBAdapter {
                 if (c.getCount() == 1 && c.moveToFirst()) {
                     s = new PrivacySettings(c.getInt(0), c.getString(1), c.getInt(2), (byte)c.getShort(3), c.getString(4), 
                             (byte)c.getShort(5), c.getString(6), (byte)c.getShort(7), c.getString(8), c.getString(9), (byte)c.getShort(10), 
-                            c.getString(11), c.getString(12));
+                            c.getString(11), c.getString(12), (byte)c.getShort(13), (byte)c.getShort(14));
                     Log.d(TAG, "getSettings: found settings entry for package: " + packageName + " UID: " + uid);
                 } else if (c.getCount() > 1) {
                     // multiple settings entries have same package name AND UID, this should NEVER happen
@@ -109,7 +112,7 @@ public class PrivacyDBAdapter {
             return result;
         }
 
-        Log.d(TAG, "saveSettings: opening database in writable mode");
+//        Log.d(TAG, "saveSettings: opening database in writable mode");
         SQLiteDatabase db = getWritableDatabase();
 
         ContentValues values = new ContentValues();
@@ -128,7 +131,10 @@ public class PrivacyDBAdapter {
         
         values.put("locationNetworkSetting", s.getLocationNetworkSetting());
         values.put("locationNetworkLat", s.getLocationNetworkLat());
-        values.put("locationNetworkLon", s.getLocationNetworkLon());        
+        values.put("locationNetworkLon", s.getLocationNetworkLon());
+        
+        values.put("networkInfoSetting", s.getNetworkInfoSetting());        
+        values.put("simInfoSetting", s.getSimInfoSetting());      
 
         Log.d(TAG, "saveSettings: checking if entry exists already.");
         Cursor c = null;

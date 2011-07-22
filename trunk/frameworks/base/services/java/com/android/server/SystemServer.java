@@ -167,6 +167,8 @@ class ServerThread extends Thread {
             ContentService.main(context,
                     factoryTest == SystemServer.FACTORY_TEST_LOW_LEVEL);
 
+            addPrivacyService(context);
+            
             Slog.i(TAG, "System Content Providers");
             ActivityManagerService.installSystemProviders();
 
@@ -444,8 +446,6 @@ class ServerThread extends Thread {
             } catch (Throwable e) {
                 Slog.e(TAG, "Failure starting DiskStats Service", e);
             }
-            
-            addPrivacyService(context);
 
         }
 

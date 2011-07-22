@@ -30,27 +30,30 @@ public class PrivacySettings implements Parcelable {
      * Random output, appropriate for relevant setting. When this option is set, the
      * corresponding getter methods will generate appropriate random values automatically.
      * 
-     * Device ID: a random string consisting of 15 numeric digits
+     * Device ID: a random string consisting of 15 numeric digits preceded by a "+"
      * Line1Number: a random string consisting of 12 numeric digits
      */
     public static final byte RANDOM = 3;
     
-    /**
-     * Database entry ID
-     */
+    // Database entry ID
     private final Integer _id;
     
+    //
     // Application identifiers
+    //
     
     private String packageName;
     private int uid;
     
+    //
     // Privacy settings
+    //
     
     private byte deviceIdSetting;
     private String deviceId;
     
-    private byte line1NumberSetting;
+    // Phone and Voice Mailbox Number
+    private byte line1NumberSetting; 
     private String line1Number;
     
     private byte locationGpsSetting;
@@ -59,6 +62,9 @@ public class PrivacySettings implements Parcelable {
     private byte locationNetworkSetting;
     private String locationNetworkLat;
     private String locationNetworkLon;
+    // CountryIso, Operator Code, Operator Name
+    private byte networkInfoSetting;
+    private byte simInfoSetting;
     
     public PrivacySettings(Integer _id, String packageName, int uid) {
         this._id = _id;
@@ -76,11 +82,14 @@ public class PrivacySettings implements Parcelable {
         this.locationNetworkSetting = REAL;
         this.locationNetworkLat = null;
         this.locationNetworkLon = null;
+        this.networkInfoSetting = REAL;
+        this.simInfoSetting = REAL;
     }
     
     public PrivacySettings(Integer id, String packageName, int uid, byte deviceIdSetting, String deviceId,
             byte line1NumberSetting, String line1Number, byte locationGpsSetting, String locationGpsLat,
-            String locationGpsLon, byte locationNetworkSetting, String locationNetworkLat, String locationNetworkLon) {
+            String locationGpsLon, byte locationNetworkSetting, String locationNetworkLat, 
+            String locationNetworkLon, byte networkInfoSetting, byte simInfoSetting) {
         this._id = id;
         
         this.packageName = packageName;
@@ -96,6 +105,8 @@ public class PrivacySettings implements Parcelable {
         this.locationNetworkSetting = locationNetworkSetting;
         this.locationNetworkLat = locationNetworkLat;
         this.locationNetworkLon = locationNetworkLon;
+        this.networkInfoSetting = networkInfoSetting;
+        this.simInfoSetting = networkInfoSetting;
     }
 
     public Integer get_id() {
@@ -129,7 +140,7 @@ public class PrivacySettings implements Parcelable {
     public String getDeviceId() {
         if (deviceIdSetting == RANDOM) {
             Random rnd = new Random();
-            String rndId = Math.abs(rnd.nextLong()) + "";
+            String rndId = "+" + Math.abs(rnd.nextLong()) + "";
             return rndId.substring(0, 15);
         }
         return deviceId;
@@ -212,14 +223,30 @@ public class PrivacySettings implements Parcelable {
         this.locationNetworkLon = locationNetworkLon;
     }
 
+    public byte getNetworkInfoSetting() {
+        return networkInfoSetting;
+    }
+
+    public void setNetworkInfoSetting(byte networkInfoSetting) {
+        this.networkInfoSetting = networkInfoSetting;
+    }
+
+    public byte getSimInfoSetting() {
+        return simInfoSetting;
+    }
+
+    public void setSimInfoSetting(byte simInfoSetting) {
+        this.simInfoSetting = simInfoSetting;
+    }
+
     @Override
     public String toString() {
         return "PrivacySettings [_id=" + _id + ", deviceId=" + deviceId + ", deviceIdSetting=" + deviceIdSetting
                 + ", line1Number=" + line1Number + ", line1NumberSetting=" + line1NumberSetting + ", locationGpsLat="
                 + locationGpsLat + ", locationGpsLon=" + locationGpsLon + ", locationGpsSetting=" + locationGpsSetting
                 + ", locationNetworkLat=" + locationNetworkLat + ", locationNetworkLon=" + locationNetworkLon
-                + ", locationNetworkSetting=" + locationNetworkSetting + ", packageName=" + packageName + ", uid="
-                + uid + "]";
+                + ", locationNetworkSetting=" + locationNetworkSetting + ", networkInfoSetting=" + networkInfoSetting
+                + ", packageName=" + packageName + ", simInfoSetting=" + simInfoSetting + ", uid=" + uid + "]";
     }
 
     /**

@@ -30,7 +30,12 @@ public class PrivacySettingsManager {
     public PrivacySettings getSettings(String packageName, int uid) {
         try {
             Log.d(TAG, "getSettings for package: " + packageName + " UID: " + uid);
-            return mService.getSettings(packageName, uid);
+            if (mService != null) {
+                return mService.getSettings(packageName, uid);
+            } else {
+                Log.e(TAG, "PrivacySettingsManagerService not ready");
+                return null;
+            }
         } catch (RemoteException e) {
             e.printStackTrace();
             return null;
@@ -40,7 +45,12 @@ public class PrivacySettingsManager {
     public boolean saveSettings(PrivacySettings settings) {
         try {
             Log.d(TAG, "saveSettings: " + settings);
-            return mService.saveSettings(settings);
+            if (mService != null) {            
+                return mService.saveSettings(settings);
+            } else {
+                Log.e(TAG, "PrivacySettingsManagerService not ready");
+                return false;
+            }
         } catch (RemoteException e) {
             Log.e(TAG, "RemoteException in saveSettings: ", e);
             return false;
