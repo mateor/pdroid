@@ -27,7 +27,7 @@ public class PrivacySettingsManagerService extends IPrivacySettingsManager.Stub 
     }
 
     public PrivacySettings getSettings(String packageName, int uid) {
-        Log.d(TAG, "getSettings for package: " + packageName + " UID: " + uid);
+        Log.d(TAG, "getSettings - " + packageName + " UID: " + uid);
         return DBAdapter.getSettings(packageName, uid);
     }
 

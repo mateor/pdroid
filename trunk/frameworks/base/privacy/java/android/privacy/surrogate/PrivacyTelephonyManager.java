@@ -18,13 +18,16 @@ package android.privacy.surrogate;
 
 import android.content.Context;
 import android.os.Binder;
+import android.os.Bundle;
 import android.privacy.PrivacySettings;
 import android.privacy.PrivacySettingsManager;
+import android.telephony.CellLocation;
 import android.telephony.NeighboringCellInfo;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class PrivacyTelephonyManager extends TelephonyManager {
@@ -41,7 +44,6 @@ public class PrivacyTelephonyManager extends TelephonyManager {
     
     @Override
     public String getDeviceId() {
-        Log.d(TAG, "getDeviceId request from package: " + mContext.getPackageName() + " UID: " + Binder.getCallingUid());
         PrivacySettings pSet = mPrivSetManager.getSettings(mContext.getPackageName(), Binder.getCallingUid());
         String output;
         if (pSet != null && pSet.getDeviceIdSetting() != PrivacySettings.REAL) {
@@ -49,16 +51,15 @@ public class PrivacyTelephonyManager extends TelephonyManager {
         } else {
             output = super.getDeviceId();
         }
-        Log.d(TAG, "getDeviceId output: " + output);
+        Log.d(TAG, "getDeviceId - " + mContext.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output);
         return output;
     }
     
     @Override
     public String getLine1Number() {
-        Log.d(TAG, "getLine1Number request from package: " + mContext.getPackageName() + " UID: " + Binder.getCallingUid());
         String output = getLine1NumberOrVoiceMailNumber();
         if (output == null) output = super.getLine1Number();
-        Log.d(TAG, "getLine1Number output: " + output);
+        Log.d(TAG, "getLine1Number - " + mContext.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output);
         return output;
     }
     
@@ -68,10 +69,9 @@ public class PrivacyTelephonyManager extends TelephonyManager {
      */
     @Override
     public String getVoiceMailNumber() {
-        Log.d(TAG, "getVoiceMailNumber request from package: " + mContext.getPackageName() + " UID: " + Binder.getCallingUid());
         String output = getLine1NumberOrVoiceMailNumber();
         if (output == null) output = super.getVoiceMailNumber();
-        Log.d(TAG, "getVoiceMailNumber output: " + output);
+        Log.d(TAG, "getVoiceMailNumber - " + mContext.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output);
         return output;
     }
     
@@ -89,38 +89,54 @@ public class PrivacyTelephonyManager extends TelephonyManager {
     }
     
     /**
-     * For monitoring purposes only
+     * Intercept requests for mobile network cell information. This can be used for tracking network
+     * based location.
      */
     @Override
     public List<NeighboringCellInfo> getNeighboringCellInfo() {
-        Log.d(TAG, "getNeighboringCellInfo request from package: " + mContext.getPackageName() + " UID: " + Binder.getCallingUid());
-        return super.getNeighboringCellInfo();
+        PrivacySettings pSet = mPrivSetManager.getSettings(mContext.getPackageName(), Binder.getCallingUid());
+        List<NeighboringCellInfo> output = null;
+        String output_label = "[null]";
+        
+        if (pSet != null) {
+            if (pSet.getLocationNetworkSetting() == PrivacySettings.EMPTY) {
+                // output = null;
+            } else if (pSet.getLocationNetworkSetting() != PrivacySettings.REAL) {
+                output = new ArrayList<NeighboringCellInfo>();
+                output_label = "[empty list of cells]";
+            } else {
+                output = super.getNeighboringCellInfo();
+                String cells = "";
+                for (NeighboringCellInfo i : output) cells += "\t" + i + "\n";
+                output_label = "[real value]:\n" + cells;
+            }
+        }
+        
+        Log.d(TAG, "getNeighboringCellInfo - " + mContext.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output_label);
+        return output;
     }
     
     @Override
     public String getNetworkCountryIso() {
-        Log.d(TAG, "getNetworkCountryIso request from package: " + mContext.getPackageName() + " UID: " + Binder.getCallingUid());
         String output = getNetworkInfo();
         if (output == null) output = super.getNetworkCountryIso();
-        Log.d(TAG, "getNetworkCountryIso output: " + output);
+        Log.d(TAG, "getNetworkCountryIso - " + mContext.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output);
         return output;
     }
 
     @Override
     public String getNetworkOperator() {
-        Log.d(TAG, "getNetworkOperator request from package: " + mContext.getPackageName() + " UID: " + Binder.getCallingUid());
         String output = getNetworkInfo();
         if (output == null) output = super.getNetworkOperator();
-        Log.d(TAG, "getNetworkOperator output: " + output);
+        Log.d(TAG, "getNetworkOperator - " + mContext.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output);
         return output;
     }
 
     @Override
     public String getNetworkOperatorName() {
-        Log.d(TAG, "getNetworkOperatorName request from package: " + mContext.getPackageName() + " UID: " + Binder.getCallingUid());
         String output = getNetworkInfo();
         if (output == null) output = super.getNetworkOperatorName();
-        Log.d(TAG, "getNetworkOperatorName output: " + output);
+        Log.d(TAG, "getNetworkOperatorName - " + mContext.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output);
         return output;
     }
     
@@ -139,28 +155,25 @@ public class PrivacyTelephonyManager extends TelephonyManager {
     
     @Override
     public String getSimCountryIso() {
-        Log.d(TAG, "getSimCountryIso request from package: " + mContext.getPackageName() + " UID: " + Binder.getCallingUid());
         String output = getSimInfo();
         if (output == null) output = super.getSimCountryIso();
-        Log.d(TAG, "getSimCountryIso output: " + output);        
+        Log.d(TAG, "getSimCountryIso - " + mContext.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output);
         return output;
     }
 
     @Override
     public String getSimOperator() {
-        Log.d(TAG, "getSimOperator request from package: " + mContext.getPackageName() + " UID: " + Binder.getCallingUid());
         String output = getSimInfo();
         if (output == null) output = super.getSimOperator();
-        Log.d(TAG, "getSimOperator output: " + output); 
+        Log.d(TAG, "getSimOperator - " + mContext.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output);
         return output;
     }
 
     @Override
     public String getSimOperatorName() {
-        Log.d(TAG, "getSimOperatorName request from package: " + mContext.getPackageName() + " UID: " + Binder.getCallingUid());
         String output = getSimInfo();
         if (output == null) output = super.getSimOperatorName();
-        Log.d(TAG, "getSimOperatorName output: " + output);         
+        Log.d(TAG, "getSimOperatorName - " + mContext.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output);
         return output;
     }
     
@@ -182,8 +195,15 @@ public class PrivacyTelephonyManager extends TelephonyManager {
      */
     @Override
     public String getSimSerialNumber() {
-        // TODO Auto-generated method stub
-        return super.getSimSerialNumber();
+        PrivacySettings pSet = mPrivSetManager.getSettings(mContext.getPackageName(), Binder.getCallingUid());
+        String output;
+        if (pSet != null && pSet.getSimSerialNumberSetting() != PrivacySettings.REAL) {
+            output = pSet.getSimSerialNumber(); // can be empty, custom or random
+        } else {
+            output = super.getSimSerialNumber();
+        }
+        Log.d(TAG, "getSimSerialNumber - " + mContext.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output);
+        return output;
     }
     
     /**
@@ -191,37 +211,42 @@ public class PrivacyTelephonyManager extends TelephonyManager {
      */
     @Override
     public String getSubscriberId() {
-        // TODO Auto-generated method stub
-        return super.getSubscriberId();
+        PrivacySettings pSet = mPrivSetManager.getSettings(mContext.getPackageName(), Binder.getCallingUid());
+        String output;
+        if (pSet != null && pSet.getSubscriberIdSetting() != PrivacySettings.REAL) {
+            output = pSet.getSubscriberId(); // can be empty, custom or random
+        } else {
+            output = super.getSubscriberId();
+        }
+        Log.d(TAG, "getSubscriberId - " + mContext.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output);
+        return output;
     }
 
+    /**
+     * For monitoring purposes only
+     */    
     @Override
     public void enableLocationUpdates() {
-        Log.d(TAG, "enableLocationUpdates request from package: " + mContext.getPackageName() + " UID: " + 
-                Binder.getCallingUid());
+        Log.d(TAG, "enableLocationUpdates - " + mContext.getPackageName() + " (" + Binder.getCallingUid() + ")");
         super.enableLocationUpdates();
     }
 
     @Override
     public void listen(PhoneStateListener listener, int events) {
-        Log.d(TAG, "listen request from package: " + mContext.getPackageName() + " UID: " + 
-                Binder.getCallingUid() + "; listener: " + listener + "; events: " + events);
-        
-        PrivacySettings pSet = mPrivSetManager.getSettings(mContext.getPackageName(), Binder.getCallingUid());
-        if (pSet != null && pSet.getLocationNetworkSetting() != PrivacySettings.REAL && 
-                ((events & PhoneStateListener.LISTEN_CELL_LOCATION) != 0)) {
-            Log.d(TAG, "listen for cell location request: " + mContext.getPackageName() + " UID: " + 
-                    Binder.getCallingUid());
-            switch (pSet.getLocationNetworkSetting()) {
-                case PrivacySettings.EMPTY:
-                    return;
-                case PrivacySettings.CUSTOM:
-                case PrivacySettings.RANDOM:
-                    // TODO: implement custom listener
-                    return;
+        if (((events & PhoneStateListener.LISTEN_CELL_LOCATION) != 0)) {
+            PrivacySettings pSet = mPrivSetManager.getSettings(mContext.getPackageName(), Binder.getCallingUid());
+            String output_label;
+            if (pSet != null && pSet.getLocationNetworkSetting() != PrivacySettings.REAL) {
+                // simply block the listen request, since simulating cell location is not feasible
+                output_label = "[no action taken]";
+            } else {
+                output_label = "[real action]";
+                super.listen(listener, events);
             }
+            Log.d(TAG, "listen for cell location - " + mContext.getPackageName() + " (" + Binder.getCallingUid() + 
+                    ") output: " + output_label);
+            return;
         }
-        
-        super.listen(listener, events);
+        super.listen(listener, events);  
     }
 }

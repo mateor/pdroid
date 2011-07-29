@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.os.Binder;
 import android.util.Log;
 
@@ -36,13 +37,20 @@ public class PrivacyDBAdapter {
             " locationNetworkLat TEXT, " + 
             " locationNetworkLon TEXT, " + 
             " networkInfoSetting INTEGER, " + 
-            " simInfoSetting INTEGER" + 
+            " simInfoSetting INTEGER, " + 
+            " simSerialNumberSetting INTEGER, " + 
+            " simSerialNumber TEXT, " + 
+            " subscriberIdSetting INTEGER, " + 
+            " subscriberId TEXT, " + 
+            " accountsSetting INTEGER, " + 
+            " accountsAuthTokensSetting INTEGER" + 
             ");";
     
     private static final String[] DATABASE_FIELDS = new String[] { "_id", "packageName", "uid", 
         "deviceIdSetting", "deviceId", "line1NumberSetting", "line1Number", "locationGpsSetting", 
         "locationGpsLat", "locationGpsLon", "locationNetworkSetting", "locationNetworkLat", 
-        "locationNetworkLon", "networkInfoSetting", "simInfoSetting" };
+        "locationNetworkLon", "networkInfoSetting", "simInfoSetting", "simSerialNumberSetting", 
+        "simSerialNumber", "subscriberIdSetting", "subscriberId", "accountsSetting", "accountsAuthTokensSetting" };
 
     private SQLiteDatabase db;
 
@@ -58,8 +66,15 @@ public class PrivacyDBAdapter {
     public PrivacySettings getSettings(String packageName, int uid) {
         Log.d(TAG, "getSettings: settings request for package: " + packageName + " UID: " + uid);
         PrivacySettings s = null;
-//        Log.d(TAG, "getSettings: opening database in readable mode");
-        SQLiteDatabase db = getReadableDatabase();
+        
+        SQLiteDatabase db;
+        try {
+             db = getReadableDatabase();
+        } catch (SQLiteException e) {
+            Log.e(TAG, "getSettings: database could not be opened");
+            return null;
+        }
+        
         Cursor c = null;
 
         try {
@@ -80,7 +95,8 @@ public class PrivacyDBAdapter {
                 if (c.getCount() == 1 && c.moveToFirst()) {
                     s = new PrivacySettings(c.getInt(0), c.getString(1), c.getInt(2), (byte)c.getShort(3), c.getString(4), 
                             (byte)c.getShort(5), c.getString(6), (byte)c.getShort(7), c.getString(8), c.getString(9), (byte)c.getShort(10), 
-                            c.getString(11), c.getString(12), (byte)c.getShort(13), (byte)c.getShort(14));
+                            c.getString(11), c.getString(12), (byte)c.getShort(13), (byte)c.getShort(14), (byte)c.getShort(15), 
+                            c.getString(16), (byte)c.getShort(17), c.getString(18), (byte)c.getShort(19), (byte)c.getShort(20));
                     Log.d(TAG, "getSettings: found settings entry for package: " + packageName + " UID: " + uid);
                 } else if (c.getCount() > 1) {
                     // multiple settings entries have same package name AND UID, this should NEVER happen
@@ -112,7 +128,6 @@ public class PrivacyDBAdapter {
             return result;
         }
 
-//        Log.d(TAG, "saveSettings: opening database in writable mode");
         SQLiteDatabase db = getWritableDatabase();
 
         ContentValues values = new ContentValues();
@@ -134,7 +149,15 @@ public class PrivacyDBAdapter {
         values.put("locationNetworkLon", s.getLocationNetworkLon());
         
         values.put("networkInfoSetting", s.getNetworkInfoSetting());        
-        values.put("simInfoSetting", s.getSimInfoSetting());      
+        values.put("simInfoSetting", s.getSimInfoSetting());
+        
+        values.put("simSerialNumberSetting", s.getSimSerialNumberSetting());        
+        values.put("simSerialNumber", s.getSimSerialNumber());
+        values.put("subscriberIdSetting", s.getSubscriberIdSetting());        
+        values.put("subscriberId", s.getSubscriberId());
+        
+        values.put("accountsSetting", s.getAccountsSetting());
+        values.put("accountsAuthTokensSetting", s.getAccountsAuthTokensSetting());
 
         Log.d(TAG, "saveSettings: checking if entry exists already.");
         Cursor c = null;
@@ -190,7 +213,6 @@ public class PrivacyDBAdapter {
     }
     
     private synchronized SQLiteDatabase getReadableDatabase() {
-        if (!new File(DATABASE_NAME).exists()) createDatabase();
         
         if (db != null && db.isOpen() && db.isReadOnly()) {
             return db;
@@ -203,6 +225,7 @@ public class PrivacyDBAdapter {
     }
 
     private synchronized SQLiteDatabase getWritableDatabase() {
+        // create the database if it does not exist
         if (!new File(DATABASE_NAME).exists()) createDatabase();
         
         if (db != null && db.isOpen() && !db.isReadOnly()) {

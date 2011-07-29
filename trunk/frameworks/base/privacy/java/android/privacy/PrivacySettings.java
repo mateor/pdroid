@@ -31,7 +31,7 @@ public class PrivacySettings implements Parcelable {
      * corresponding getter methods will generate appropriate random values automatically.
      * 
      * Device ID: a random string consisting of 15 numeric digits preceded by a "+"
-     * Line1Number: a random string consisting of 12 numeric digits
+     * Line1Number: a random string consisting of 13 numeric digits
      */
     public static final byte RANDOM = 3;
     
@@ -62,9 +62,22 @@ public class PrivacySettings implements Parcelable {
     private byte locationNetworkSetting;
     private String locationNetworkLat;
     private String locationNetworkLon;
+    
     // CountryIso, Operator Code, Operator Name
     private byte networkInfoSetting;
     private byte simInfoSetting;
+    
+    private byte simSerialNumberSetting;
+    private String simSerialNumber;
+    private byte subscriberIdSetting;
+    private String subscriberId;
+    
+    private byte accountsSetting;
+    private byte accountsAuthTokensSetting;
+    
+    public PrivacySettings() {
+        this(-1, null, -1);
+    }
     
     public PrivacySettings(Integer _id, String packageName, int uid) {
         this._id = _id;
@@ -84,12 +97,19 @@ public class PrivacySettings implements Parcelable {
         this.locationNetworkLon = null;
         this.networkInfoSetting = REAL;
         this.simInfoSetting = REAL;
+        this.simSerialNumberSetting = REAL;
+        this.simSerialNumber = null;
+        this.subscriberIdSetting = REAL;
+        this.subscriberId = null;
+        this.accountsSetting = REAL;
+        this.accountsAuthTokensSetting = REAL;
     }
     
     public PrivacySettings(Integer id, String packageName, int uid, byte deviceIdSetting, String deviceId,
             byte line1NumberSetting, String line1Number, byte locationGpsSetting, String locationGpsLat,
             String locationGpsLon, byte locationNetworkSetting, String locationNetworkLat, 
-            String locationNetworkLon, byte networkInfoSetting, byte simInfoSetting) {
+            String locationNetworkLon, byte networkInfoSetting, byte simInfoSetting, byte simSerialNumberSetting,
+            String simSerialNumber, byte subscriberIdSetting, String subscriberId, byte accountsSetting, byte accountsAuthTokensSetting) {
         this._id = id;
         
         this.packageName = packageName;
@@ -107,6 +127,12 @@ public class PrivacySettings implements Parcelable {
         this.locationNetworkLon = locationNetworkLon;
         this.networkInfoSetting = networkInfoSetting;
         this.simInfoSetting = networkInfoSetting;
+        this.simSerialNumberSetting = simSerialNumberSetting;
+        this.simSerialNumber = simSerialNumber;
+        this.subscriberIdSetting = subscriberIdSetting;
+        this.subscriberId = subscriberId;
+        this.accountsSetting = accountsSetting;
+        this.accountsAuthTokensSetting = accountsAuthTokensSetting;
     }
 
     public Integer get_id() {
@@ -138,9 +164,10 @@ public class PrivacySettings implements Parcelable {
     }
 
     public String getDeviceId() {
+        if (deviceIdSetting == EMPTY) return "";
         if (deviceIdSetting == RANDOM) {
             Random rnd = new Random();
-            String rndId = "+" + Math.abs(rnd.nextLong()) + "";
+            String rndId = Math.abs(rnd.nextLong()) + "";
             return rndId.substring(0, 15);
         }
         return deviceId;
@@ -159,10 +186,11 @@ public class PrivacySettings implements Parcelable {
     }
 
     public String getLine1Number() {
+        if (line1NumberSetting == EMPTY) return "";
         if (line1NumberSetting == RANDOM) {
             Random rnd = new Random();
-            String rndId = Math.abs(rnd.nextLong()) + "";
-            return rndId.substring(0, 12);
+            String rndId = "+" + Math.abs(rnd.nextLong()) + "";
+            return rndId.substring(0, 13);
         }
         return line1Number;
     }
@@ -180,6 +208,7 @@ public class PrivacySettings implements Parcelable {
     }
 
     public String getLocationGpsLat() {
+        if (locationGpsSetting == EMPTY) return "";
         if (locationGpsSetting == RANDOM) return getRandomLat();
         return locationGpsLat;
     }
@@ -189,6 +218,7 @@ public class PrivacySettings implements Parcelable {
     }
 
     public String getLocationGpsLon() {
+        if (locationGpsSetting == EMPTY) return "";        
         if (locationGpsSetting == RANDOM) return getRandomLon();
         return locationGpsLon;
     }
@@ -206,6 +236,7 @@ public class PrivacySettings implements Parcelable {
     }
 
     public String getLocationNetworkLat() {
+        if (locationNetworkSetting == EMPTY) return "";
         if (locationNetworkSetting == RANDOM) return getRandomLat();  
         return locationNetworkLat;
     }
@@ -215,6 +246,7 @@ public class PrivacySettings implements Parcelable {
     }
 
     public String getLocationNetworkLon() {
+        if (locationNetworkSetting == EMPTY) return "";
         if (locationNetworkSetting == RANDOM) return getRandomLon();
         return locationNetworkLon;
     }
@@ -239,14 +271,77 @@ public class PrivacySettings implements Parcelable {
         this.simInfoSetting = simInfoSetting;
     }
 
+    public byte getSimSerialNumberSetting() {
+        return simSerialNumberSetting;
+    }
+
+    public void setSimSerialNumberSetting(byte simSerialNumberSetting) {
+        this.simSerialNumberSetting = simSerialNumberSetting;
+    }
+
+    public String getSimSerialNumber() {
+        if (simSerialNumberSetting == EMPTY) return "";
+        if (simSerialNumberSetting == RANDOM) {
+            Random rnd = new Random();
+            return Math.abs(rnd.nextLong()) + "";
+        }
+        return simSerialNumber;
+    }
+
+    public void setSimSerialNumber(String simSerialNumber) {
+        this.simSerialNumber = simSerialNumber;
+    }
+
+    public byte getSubscriberIdSetting() {
+        return subscriberIdSetting;
+    }
+
+    public void setSubscriberIdSetting(byte subscriberIdSetting) {
+        this.subscriberIdSetting = subscriberIdSetting;
+    }
+
+    public String getSubscriberId() {
+        if (subscriberIdSetting == EMPTY) return "";
+        if (subscriberIdSetting == RANDOM) {
+            Random rnd = new Random();
+            String rndId = Math.abs(rnd.nextLong()) + "";
+            return rndId.substring(0, 15);
+        }
+        return subscriberId;
+    }
+
+    public void setSubscriberId(String subscriberId) {
+        this.subscriberId = subscriberId;
+    }
+
+    public byte getAccountsSetting() {
+        return accountsSetting;
+    }
+
+    public void setAccountsSetting(byte accountsSetting) {
+        this.accountsSetting = accountsSetting;
+    }
+
+    public byte getAccountsAuthTokensSetting() {
+        return accountsAuthTokensSetting;
+    }
+
+    public void setAccountsAuthTokensSetting(byte accountsAuthTokensSetting) {
+        this.accountsAuthTokensSetting = accountsAuthTokensSetting;
+    }
+
     @Override
     public String toString() {
-        return "PrivacySettings [_id=" + _id + ", deviceId=" + deviceId + ", deviceIdSetting=" + deviceIdSetting
-                + ", line1Number=" + line1Number + ", line1NumberSetting=" + line1NumberSetting + ", locationGpsLat="
-                + locationGpsLat + ", locationGpsLon=" + locationGpsLon + ", locationGpsSetting=" + locationGpsSetting
-                + ", locationNetworkLat=" + locationNetworkLat + ", locationNetworkLon=" + locationNetworkLon
-                + ", locationNetworkSetting=" + locationNetworkSetting + ", networkInfoSetting=" + networkInfoSetting
-                + ", packageName=" + packageName + ", simInfoSetting=" + simInfoSetting + ", uid=" + uid + "]";
+        return "PrivacySettings [_id=" + _id + ", accountsAuthTokensSetting=" + accountsAuthTokensSetting
+                + ", accountsSetting=" + accountsSetting + ", deviceId=" + deviceId + ", deviceIdSetting="
+                + deviceIdSetting + ", line1Number=" + line1Number + ", line1NumberSetting=" + line1NumberSetting
+                + ", locationGpsLat=" + locationGpsLat + ", locationGpsLon=" + locationGpsLon + ", locationGpsSetting="
+                + locationGpsSetting + ", locationNetworkLat=" + locationNetworkLat + ", locationNetworkLon="
+                + locationNetworkLon + ", locationNetworkSetting=" + locationNetworkSetting + ", networkInfoSetting="
+                + networkInfoSetting + ", packageName=" + packageName + ", simInfoSetting=" + simInfoSetting
+                + ", simSerialNumber=" + simSerialNumber + ", simSerialNumberSetting=" + simSerialNumberSetting
+                + ", subscriberId=" + subscriberId + ", subscriberIdSetting=" + subscriberIdSetting + ", uid=" + uid
+                + "]";
     }
 
     /**
@@ -256,15 +351,15 @@ public class PrivacySettings implements Parcelable {
     private String getRandomLat() {
         double lat = Math.random() * 180;
         if (lat > 90) return (lat - 90) + "";
-        else return (-(lat - 90)) + "";
+        else return -lat + "";
     }
     
     private String getRandomLon() {
         double lon = Math.random() * 360;
         if (lon > 180) return (lon - 180) + "";
-        else return (-(lon - 180)) + "";
+        else return -lon + "";
     }
-    
+
     /**
      * Parcelable implementation
      */
@@ -297,6 +392,14 @@ public class PrivacySettings implements Parcelable {
         this.locationNetworkSetting = in.readByte();
         this.locationNetworkLat = in.readString();
         this.locationNetworkLon = in.readString();
+        this.networkInfoSetting = in.readByte();
+        this.simInfoSetting = in.readByte();
+        this.simSerialNumberSetting = in.readByte();
+        this.simSerialNumber = in.readString();
+        this.subscriberIdSetting = in.readByte();
+        this.subscriberId = in.readString();
+        this.accountsSetting = in.readByte();
+        this.accountsAuthTokensSetting = in.readByte();
     }
     
     @Override
@@ -316,6 +419,14 @@ public class PrivacySettings implements Parcelable {
         dest.writeByte(locationNetworkSetting);
         dest.writeString(locationNetworkLat);
         dest.writeString(locationNetworkLon);
+        dest.writeByte(networkInfoSetting);
+        dest.writeByte(simInfoSetting);
+        dest.writeByte(simSerialNumberSetting);
+        dest.writeString(simSerialNumber);
+        dest.writeByte(subscriberIdSetting);
+        dest.writeString(subscriberId);
+        dest.writeByte(accountsSetting);
+        dest.writeByte(accountsAuthTokensSetting);
     }
     
     @Override
