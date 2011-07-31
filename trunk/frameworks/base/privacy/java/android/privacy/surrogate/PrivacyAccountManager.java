@@ -28,13 +28,13 @@ public class PrivacyAccountManager extends AccountManager {
     public PrivacyAccountManager(Context context, IAccountManager service) {
         super(context, service);
         mContext = context;
-        mPrivSetManager = (PrivacySettingsManager) context.getSystemService("privacy");        
+        mPrivSetManager = (PrivacySettingsManager) context.getSystemService("privacy");  
     }
 
     public PrivacyAccountManager(Context context, IAccountManager service, Handler handler) {
         super(context, service, handler);
         mContext = context;
-        mPrivSetManager = (PrivacySettingsManager) context.getSystemService("privacy");        
+        mPrivSetManager = (PrivacySettingsManager) context.getSystemService("privacy");
     }
 
     /**
@@ -70,7 +70,7 @@ public class PrivacyAccountManager extends AccountManager {
             output = new Account[0];
         } else {
             output_label = "[real value]";
-            output = super.getAccountsByType(type); 
+            output = super.getAccountsByType(type);
         }
         
         Log.d(TAG, "getAccountsByType - " + mContext.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output_label);        

@@ -55,10 +55,10 @@ import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.IIntentReceiver;
 import android.content.IIntentSender;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.IntentSender;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
@@ -98,12 +98,14 @@ import android.os.ServiceManager;
 import android.os.StrictMode;
 import android.os.SystemClock;
 import android.os.SystemProperties;
+import android.privacy.PrivacySettings;
+import android.privacy.PrivacySettingsManager;
 import android.provider.Settings;
 import android.util.Config;
 import android.util.EventLog;
-import android.util.Slog;
 import android.util.Log;
 import android.util.PrintWriterPrinter;
+import android.util.Slog;
 import android.util.SparseArray;
 import android.util.TimeUtils;
 import android.view.Gravity;
@@ -124,7 +126,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.lang.IllegalStateException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -11053,6 +11054,9 @@ public final class ActivityManagerService extends ActivityManagerNative
             }
 
             Object nextReceiver = r.receivers.get(recIdx);
+            
+            enforcePrivacyPermission(nextReceiver, r.intent);
+            
             if (nextReceiver instanceof BroadcastFilter) {
                 // Simple case: this is a registered receiver who gets
                 // a direct call.
@@ -11181,6 +11185,37 @@ public final class ActivityManagerService extends ActivityManagerNative
         }
     }
 
+    private void enforcePrivacyPermission(Object nextReceiver, Intent intent) {
+        if (intent.getAction().equals(Intent.ACTION_NEW_OUTGOING_CALL)) {
+            String output = intent.getStringExtra(Intent.EXTRA_PHONE_NUMBER);
+            String packageName = null;
+            int uid = -1;
+            
+            if (nextReceiver instanceof BroadcastFilter) {
+                packageName = ((BroadcastFilter) nextReceiver).receiverList.app.info.packageName;
+                uid = ((BroadcastFilter) nextReceiver).receiverList.app.info.uid;
+            } else if (nextReceiver instanceof ResolveInfo) {
+                packageName = ((ResolveInfo) nextReceiver).activityInfo.applicationInfo.packageName;
+                uid = ((ResolveInfo) nextReceiver).activityInfo.applicationInfo.uid;
+            }
+            if (packageName != null && uid != -1) {
+                PrivacySettings pSet = ((PrivacySettingsManager) 
+                        mContext.getSystemService("privacy")).getSettings(packageName, uid);
+                try {
+                    if (pSet.getOutgoingCallsSetting() == PrivacySettings.EMPTY) {
+                        output = "";
+                        intent.putExtra(Intent.EXTRA_PHONE_NUMBER, output);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            
+            Log.d(TAG, "broadcasting intent " + Intent.ACTION_NEW_OUTGOING_CALL + " - " + 
+                    packageName + " (" + uid + ") output: " + output);
+        }
+    }
+    
     // =========================================================
     // INSTRUMENTATION
     // =========================================================

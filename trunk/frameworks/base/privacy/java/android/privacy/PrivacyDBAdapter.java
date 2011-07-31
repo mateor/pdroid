@@ -43,14 +43,16 @@ public class PrivacyDBAdapter {
             " subscriberIdSetting INTEGER, " + 
             " subscriberId TEXT, " + 
             " accountsSetting INTEGER, " + 
-            " accountsAuthTokensSetting INTEGER" + 
+            " accountsAuthTokensSetting INTEGER, " + 
+            " outgoingCallsSetting INTEGER" + 
             ");";
     
     private static final String[] DATABASE_FIELDS = new String[] { "_id", "packageName", "uid", 
         "deviceIdSetting", "deviceId", "line1NumberSetting", "line1Number", "locationGpsSetting", 
         "locationGpsLat", "locationGpsLon", "locationNetworkSetting", "locationNetworkLat", 
         "locationNetworkLon", "networkInfoSetting", "simInfoSetting", "simSerialNumberSetting", 
-        "simSerialNumber", "subscriberIdSetting", "subscriberId", "accountsSetting", "accountsAuthTokensSetting" };
+        "simSerialNumber", "subscriberIdSetting", "subscriberId", "accountsSetting", "accountsAuthTokensSetting", 
+        "outgoingCallsSetting"};
 
     private SQLiteDatabase db;
 
@@ -96,7 +98,8 @@ public class PrivacyDBAdapter {
                     s = new PrivacySettings(c.getInt(0), c.getString(1), c.getInt(2), (byte)c.getShort(3), c.getString(4), 
                             (byte)c.getShort(5), c.getString(6), (byte)c.getShort(7), c.getString(8), c.getString(9), (byte)c.getShort(10), 
                             c.getString(11), c.getString(12), (byte)c.getShort(13), (byte)c.getShort(14), (byte)c.getShort(15), 
-                            c.getString(16), (byte)c.getShort(17), c.getString(18), (byte)c.getShort(19), (byte)c.getShort(20));
+                            c.getString(16), (byte)c.getShort(17), c.getString(18), (byte)c.getShort(19), (byte)c.getShort(20), 
+                            (byte)c.getShort(21));
                     Log.d(TAG, "getSettings: found settings entry for package: " + packageName + " UID: " + uid);
                 } else if (c.getCount() > 1) {
                     // multiple settings entries have same package name AND UID, this should NEVER happen
@@ -158,6 +161,7 @@ public class PrivacyDBAdapter {
         
         values.put("accountsSetting", s.getAccountsSetting());
         values.put("accountsAuthTokensSetting", s.getAccountsAuthTokensSetting());
+        values.put("outgoingCallsSetting", s.getOutgoingCallsSetting());
 
         Log.d(TAG, "saveSettings: checking if entry exists already.");
         Cursor c = null;

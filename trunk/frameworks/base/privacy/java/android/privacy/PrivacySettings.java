@@ -74,11 +74,8 @@ public class PrivacySettings implements Parcelable {
     
     private byte accountsSetting;
     private byte accountsAuthTokensSetting;
-    
-    public PrivacySettings() {
-        this(-1, null, -1);
-    }
-    
+    private byte outgoingCallsSetting;
+
     public PrivacySettings(Integer _id, String packageName, int uid) {
         this._id = _id;
         
@@ -103,13 +100,15 @@ public class PrivacySettings implements Parcelable {
         this.subscriberId = null;
         this.accountsSetting = REAL;
         this.accountsAuthTokensSetting = REAL;
+        this.outgoingCallsSetting = REAL;
     }
     
     public PrivacySettings(Integer id, String packageName, int uid, byte deviceIdSetting, String deviceId,
             byte line1NumberSetting, String line1Number, byte locationGpsSetting, String locationGpsLat,
             String locationGpsLon, byte locationNetworkSetting, String locationNetworkLat, 
             String locationNetworkLon, byte networkInfoSetting, byte simInfoSetting, byte simSerialNumberSetting,
-            String simSerialNumber, byte subscriberIdSetting, String subscriberId, byte accountsSetting, byte accountsAuthTokensSetting) {
+            String simSerialNumber, byte subscriberIdSetting, String subscriberId, byte accountsSetting, 
+            byte accountsAuthTokensSetting, byte outgoingCallsSetting) {
         this._id = id;
         
         this.packageName = packageName;
@@ -133,6 +132,7 @@ public class PrivacySettings implements Parcelable {
         this.subscriberId = subscriberId;
         this.accountsSetting = accountsSetting;
         this.accountsAuthTokensSetting = accountsAuthTokensSetting;
+        this.outgoingCallsSetting = outgoingCallsSetting;
     }
 
     public Integer get_id() {
@@ -330,6 +330,14 @@ public class PrivacySettings implements Parcelable {
         this.accountsAuthTokensSetting = accountsAuthTokensSetting;
     }
 
+    public byte getOutgoingCallsSetting() {
+        return outgoingCallsSetting;
+    }
+
+    public void setOutgoingCallsSetting(byte outgoingCallsSetting) {
+        this.outgoingCallsSetting = outgoingCallsSetting;
+    }
+
     @Override
     public String toString() {
         return "PrivacySettings [_id=" + _id + ", accountsAuthTokensSetting=" + accountsAuthTokensSetting
@@ -338,10 +346,10 @@ public class PrivacySettings implements Parcelable {
                 + ", locationGpsLat=" + locationGpsLat + ", locationGpsLon=" + locationGpsLon + ", locationGpsSetting="
                 + locationGpsSetting + ", locationNetworkLat=" + locationNetworkLat + ", locationNetworkLon="
                 + locationNetworkLon + ", locationNetworkSetting=" + locationNetworkSetting + ", networkInfoSetting="
-                + networkInfoSetting + ", packageName=" + packageName + ", simInfoSetting=" + simInfoSetting
-                + ", simSerialNumber=" + simSerialNumber + ", simSerialNumberSetting=" + simSerialNumberSetting
-                + ", subscriberId=" + subscriberId + ", subscriberIdSetting=" + subscriberIdSetting + ", uid=" + uid
-                + "]";
+                + networkInfoSetting + ", outgoingCalls=" + outgoingCallsSetting + ", packageName=" + packageName
+                + ", simInfoSetting=" + simInfoSetting + ", simSerialNumber=" + simSerialNumber
+                + ", simSerialNumberSetting=" + simSerialNumberSetting + ", subscriberId=" + subscriberId
+                + ", subscriberIdSetting=" + subscriberIdSetting + ", uid=" + uid + "]";
     }
 
     /**
@@ -400,6 +408,7 @@ public class PrivacySettings implements Parcelable {
         this.subscriberId = in.readString();
         this.accountsSetting = in.readByte();
         this.accountsAuthTokensSetting = in.readByte();
+        this.outgoingCallsSetting = in.readByte();
     }
     
     @Override
@@ -427,6 +436,7 @@ public class PrivacySettings implements Parcelable {
         dest.writeString(subscriberId);
         dest.writeByte(accountsSetting);
         dest.writeByte(accountsAuthTokensSetting);
+        dest.writeByte(outgoingCallsSetting);
     }
     
     @Override
