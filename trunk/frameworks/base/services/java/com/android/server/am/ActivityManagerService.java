@@ -11055,7 +11055,7 @@ public final class ActivityManagerService extends ActivityManagerNative
 
             Object nextReceiver = r.receivers.get(recIdx);
             
-            enforcePrivacyPermission(nextReceiver, r.intent);
+            enforcePrivacyPermission(nextReceiver, r);
             
             if (nextReceiver instanceof BroadcastFilter) {
                 // Simple case: this is a registered receiver who gets
@@ -11185,32 +11185,36 @@ public final class ActivityManagerService extends ActivityManagerNative
         }
     }
 
-    private void enforcePrivacyPermission(Object nextReceiver, Intent intent) {
-        if (intent.getAction().equals(Intent.ACTION_NEW_OUTGOING_CALL)) {
-            String output = intent.getStringExtra(Intent.EXTRA_PHONE_NUMBER);
+    private void enforcePrivacyPermission(Object nextReceiver, BroadcastRecord r) {
+        if (r != null && r.intent != null) {
+            String action = r.intent.getAction();
+            
+            String output = r.intent.getStringExtra(Intent.EXTRA_PHONE_NUMBER);
             String packageName = null;
             int uid = -1;
             
-            if (nextReceiver instanceof BroadcastFilter) {
-                packageName = ((BroadcastFilter) nextReceiver).receiverList.app.info.packageName;
-                uid = ((BroadcastFilter) nextReceiver).receiverList.app.info.uid;
-            } else if (nextReceiver instanceof ResolveInfo) {
-                packageName = ((ResolveInfo) nextReceiver).activityInfo.applicationInfo.packageName;
-                uid = ((ResolveInfo) nextReceiver).activityInfo.applicationInfo.uid;
-            }
-            if (packageName != null && uid != -1) {
-                PrivacySettings pSet = ((PrivacySettingsManager) 
-                        mContext.getSystemService("privacy")).getSettings(packageName, uid);
-                try {
-                    if (pSet.getOutgoingCallsSetting() == PrivacySettings.EMPTY) {
-                        output = "";
-                        intent.putExtra(Intent.EXTRA_PHONE_NUMBER, output);
+            if (action != null && action.equals(Intent.ACTION_NEW_OUTGOING_CALL)) {
+                
+                if (nextReceiver instanceof BroadcastFilter) {
+                    packageName = ((BroadcastFilter) nextReceiver).receiverList.app.info.packageName;
+                    uid = ((BroadcastFilter) nextReceiver).receiverList.app.info.uid;
+                } else if (nextReceiver instanceof ResolveInfo) {
+                    packageName = ((ResolveInfo) nextReceiver).activityInfo.applicationInfo.packageName;
+                    uid = ((ResolveInfo) nextReceiver).activityInfo.applicationInfo.uid;
+                }
+                if (packageName != null && uid != -1) {
+                    PrivacySettings pSet = ((PrivacySettingsManager) 
+                            mContext.getSystemService("privacy")).getSettings(packageName, uid);
+                    try {
+                        if (pSet.getOutgoingCallsSetting() == PrivacySettings.EMPTY) {
+                            output = "";
+                            r.intent.putExtra(Intent.EXTRA_PHONE_NUMBER, output);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
                 }
             }
-            
             Log.d(TAG, "broadcasting intent " + Intent.ACTION_NEW_OUTGOING_CALL + " - " + 
                     packageName + " (" + uid + ") output: " + output);
         }
