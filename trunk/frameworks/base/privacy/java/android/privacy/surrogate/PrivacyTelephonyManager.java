@@ -17,8 +17,8 @@
 package android.privacy.surrogate;
 
 import android.content.Context;
+import android.location.Location;
 import android.os.Binder;
-import android.os.Bundle;
 import android.privacy.PrivacySettings;
 import android.privacy.PrivacySettingsManager;
 import android.telephony.CellLocation;
@@ -30,7 +30,7 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PrivacyTelephonyManager extends TelephonyManager {
+public final class PrivacyTelephonyManager extends TelephonyManager {
 
     private static final String TAG = "PrivacyTelephonyManager";
     private Context mContext;
@@ -233,20 +233,86 @@ public class PrivacyTelephonyManager extends TelephonyManager {
 
     @Override
     public void listen(PhoneStateListener listener, int events) {
-        if (((events & PhoneStateListener.LISTEN_CELL_LOCATION) != 0)) {
+        if (((events & PhoneStateListener.LISTEN_CELL_LOCATION) != 0) || 
+                ((events & PhoneStateListener.LISTEN_CALL_STATE) != 0)) {
             PrivacySettings pSet = mPrivSetManager.getSettings(mContext.getPackageName(), Binder.getCallingUid());
-            String output_label;
-            if (pSet != null && pSet.getLocationNetworkSetting() != PrivacySettings.REAL) {
-                // simply block the listen request, since simulating cell location is not feasible
-                output_label = "[no action taken]";
-            } else {
-                output_label = "[real action]";
-                super.listen(listener, events);
-            }
-            Log.d(TAG, "listen for cell location - " + mContext.getPackageName() + " (" + Binder.getCallingUid() + 
-                    ") output: " + output_label);
-            return;
+            super.listen(new PrivacyPhoneStateListener(listener, pSet), events);
+            Log.d(TAG, "listen for cell location or call state - " + mContext.getPackageName() + " (" + 
+                    Binder.getCallingUid() + ") output: custom listener");
+//        if (((events & PhoneStateListener.LISTEN_CELL_LOCATION) != 0)) {
+//            PrivacySettings pSet = mPrivSetManager.getSettings(mContext.getPackageName(), Binder.getCallingUid());
+//            String output_label;
+//            if (pSet != null && pSet.getLocationNetworkSetting() != PrivacySettings.REAL) {
+//                // simply block the listen request, since simulating cell location is not feasible
+//                output_label = "[custom listener]";
+//            } else {
+//                output_label = "[real action]";
+//                super.listen(listener, events);
+//            }
+//            Log.d(TAG, "listen for cell location - " + mContext.getPackageName() + " (" + 
+//                    Binder.getCallingUid() + ") output: " + output_label);
+//            return;
+//        }
+//        if (((events & PhoneStateListener.LISTEN_CALL_STATE) != 0)) {
+//            PrivacySettings pSet = mPrivSetManager.getSettings(mContext.getPackageName(), Binder.getCallingUid());
+//            String output;
+//            if (pSet != null && pSet.getIncomingCallsSetting() != PrivacySettings.REAL) {
+//                output = "[custom listener]";
+//                super.listen(new PrivacyPhoneStateListener(listener), events);
+//            } else {
+//                output = "[real action]";
+//                super.listen(listener, events);
+//            }
+//            Log.d(TAG, "listen for call state (incoming number) - " + mContext.getPackageName() + " (" + 
+//                    Binder.getCallingUid() + ") output: " + output);
+//            return;
+//        }
+        } else {
+            super.listen(listener, events);
         }
-        super.listen(listener, events);  
+    }
+    
+    private class PrivacyPhoneStateListener extends PhoneStateListener {
+        
+        private PhoneStateListener realListener;
+        
+        private PrivacySettings pSet;
+        
+        public PrivacyPhoneStateListener(PhoneStateListener realListener, PrivacySettings pSet) {
+            this.realListener = realListener;
+            this.pSet = pSet;
+        }
+        
+        /**
+         * Replace the incoming phone number with an empty string and pass the call to 
+         * the real phone state listener 
+         */
+        @Override
+        public void onCallStateChanged(int state, String incomingNumber) {
+            String output;
+            if (pSet != null && pSet.getIncomingCallsSetting() != PrivacySettings.REAL) {
+                output = "";
+                realListener.onCallStateChanged(state, output);
+            } else {
+                output = incomingNumber;
+                realListener.onCallStateChanged(state, incomingNumber);
+            }
+            Log.d(TAG, "onCallStateChanged (incoming number) - " + mContext.getPackageName() + " (" + 
+                    Binder.getCallingUid() + ") output: " + output);
+        }
+
+        @Override
+        public void onCellLocationChanged(CellLocation location) {
+            String output;
+            if (pSet != null && pSet.getLocationNetworkSetting() != PrivacySettings.REAL) {
+                // simply block the method call, since simulating cell location is not feasible
+                output = "[no output]";
+            } else {
+                output = location.toString();
+                realListener.onCellLocationChanged(location);
+            }
+            Log.d(TAG, "onCellLocationChanged - " + mContext.getPackageName() + " (" + 
+                    Binder.getCallingUid() + ") output: " + output);
+        }
     }
 }

@@ -19,7 +19,7 @@ import android.util.Log;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-public class PrivacyAccountManager extends AccountManager {
+public final class PrivacyAccountManager extends AccountManager {
     
     private final String TAG = "PrivacyAccountManager";
     private Context mContext;

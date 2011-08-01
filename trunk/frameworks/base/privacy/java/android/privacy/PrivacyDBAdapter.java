@@ -44,7 +44,8 @@ public class PrivacyDBAdapter {
             " subscriberId TEXT, " + 
             " accountsSetting INTEGER, " + 
             " accountsAuthTokensSetting INTEGER, " + 
-            " outgoingCallsSetting INTEGER" + 
+            " outgoingCallsSetting INTEGER, " + 
+            " incomingCallsSetting INTEGER" + 
             ");";
     
     private static final String[] DATABASE_FIELDS = new String[] { "_id", "packageName", "uid", 
@@ -52,7 +53,7 @@ public class PrivacyDBAdapter {
         "locationGpsLat", "locationGpsLon", "locationNetworkSetting", "locationNetworkLat", 
         "locationNetworkLon", "networkInfoSetting", "simInfoSetting", "simSerialNumberSetting", 
         "simSerialNumber", "subscriberIdSetting", "subscriberId", "accountsSetting", "accountsAuthTokensSetting", 
-        "outgoingCallsSetting"};
+        "outgoingCallsSetting", "incomingCallsSetting"};
 
     private SQLiteDatabase db;
 
@@ -99,7 +100,7 @@ public class PrivacyDBAdapter {
                             (byte)c.getShort(5), c.getString(6), (byte)c.getShort(7), c.getString(8), c.getString(9), (byte)c.getShort(10), 
                             c.getString(11), c.getString(12), (byte)c.getShort(13), (byte)c.getShort(14), (byte)c.getShort(15), 
                             c.getString(16), (byte)c.getShort(17), c.getString(18), (byte)c.getShort(19), (byte)c.getShort(20), 
-                            (byte)c.getShort(21));
+                            (byte)c.getShort(21), (byte)c.getShort(22));
                     Log.d(TAG, "getSettings: found settings entry for package: " + packageName + " UID: " + uid);
                 } else if (c.getCount() > 1) {
                     // multiple settings entries have same package name AND UID, this should NEVER happen
@@ -162,6 +163,7 @@ public class PrivacyDBAdapter {
         values.put("accountsSetting", s.getAccountsSetting());
         values.put("accountsAuthTokensSetting", s.getAccountsAuthTokensSetting());
         values.put("outgoingCallsSetting", s.getOutgoingCallsSetting());
+        values.put("incomingCallsSetting", s.getIncomingCallsSetting());
 
         Log.d(TAG, "saveSettings: checking if entry exists already.");
         Cursor c = null;
@@ -217,10 +219,7 @@ public class PrivacyDBAdapter {
     }
     
     private synchronized SQLiteDatabase getReadableDatabase() {
-        
-        if (db != null && db.isOpen() && db.isReadOnly()) {
-            return db;
-        }
+        if (db != null && db.isOpen() && db.isReadOnly()) return db;
 
         SQLiteDatabase db = SQLiteDatabase.openDatabase(DATABASE_NAME, null, SQLiteDatabase.OPEN_READONLY);
         this.db = db;
@@ -232,9 +231,7 @@ public class PrivacyDBAdapter {
         // create the database if it does not exist
         if (!new File(DATABASE_NAME).exists()) createDatabase();
         
-        if (db != null && db.isOpen() && !db.isReadOnly()) {
-            return db;
-        }
+        if (db != null && db.isOpen() && !db.isReadOnly()) return db;
         
         SQLiteDatabase db = SQLiteDatabase.openDatabase(DATABASE_NAME, null, SQLiteDatabase.OPEN_READWRITE);
         this.db = db;

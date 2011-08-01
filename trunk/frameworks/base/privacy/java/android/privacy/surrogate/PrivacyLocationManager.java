@@ -17,7 +17,7 @@ import android.privacy.PrivacySettings;
 import android.privacy.PrivacySettingsManager;
 import android.util.Log;
 
-public class PrivacyLocationManager extends LocationManager {
+public final class PrivacyLocationManager extends LocationManager {
 
     private static final String TAG = "PrivacyLocationManager";
     

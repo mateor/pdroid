@@ -75,6 +75,7 @@ public class PrivacySettings implements Parcelable {
     private byte accountsSetting;
     private byte accountsAuthTokensSetting;
     private byte outgoingCallsSetting;
+    private byte incomingCallsSetting;
 
     public PrivacySettings(Integer _id, String packageName, int uid) {
         this._id = _id;
@@ -101,6 +102,7 @@ public class PrivacySettings implements Parcelable {
         this.accountsSetting = REAL;
         this.accountsAuthTokensSetting = REAL;
         this.outgoingCallsSetting = REAL;
+        this.incomingCallsSetting = REAL;
     }
     
     public PrivacySettings(Integer id, String packageName, int uid, byte deviceIdSetting, String deviceId,
@@ -108,7 +110,7 @@ public class PrivacySettings implements Parcelable {
             String locationGpsLon, byte locationNetworkSetting, String locationNetworkLat, 
             String locationNetworkLon, byte networkInfoSetting, byte simInfoSetting, byte simSerialNumberSetting,
             String simSerialNumber, byte subscriberIdSetting, String subscriberId, byte accountsSetting, 
-            byte accountsAuthTokensSetting, byte outgoingCallsSetting) {
+            byte accountsAuthTokensSetting, byte outgoingCallsSetting, byte incomingCallsSetting) {
         this._id = id;
         
         this.packageName = packageName;
@@ -133,6 +135,7 @@ public class PrivacySettings implements Parcelable {
         this.accountsSetting = accountsSetting;
         this.accountsAuthTokensSetting = accountsAuthTokensSetting;
         this.outgoingCallsSetting = outgoingCallsSetting;
+        this.incomingCallsSetting = incomingCallsSetting;
     }
 
     public Integer get_id() {
@@ -337,16 +340,25 @@ public class PrivacySettings implements Parcelable {
     public void setOutgoingCallsSetting(byte outgoingCallsSetting) {
         this.outgoingCallsSetting = outgoingCallsSetting;
     }
+    
+    public byte getIncomingCallsSetting() {
+        return incomingCallsSetting;
+    }
+    
+    public void setIncomingCallsSetting(byte incomingCallsSetting) {
+        this.incomingCallsSetting = incomingCallsSetting;
+    }
 
     @Override
     public String toString() {
         return "PrivacySettings [_id=" + _id + ", accountsAuthTokensSetting=" + accountsAuthTokensSetting
                 + ", accountsSetting=" + accountsSetting + ", deviceId=" + deviceId + ", deviceIdSetting="
-                + deviceIdSetting + ", line1Number=" + line1Number + ", line1NumberSetting=" + line1NumberSetting
-                + ", locationGpsLat=" + locationGpsLat + ", locationGpsLon=" + locationGpsLon + ", locationGpsSetting="
-                + locationGpsSetting + ", locationNetworkLat=" + locationNetworkLat + ", locationNetworkLon="
-                + locationNetworkLon + ", locationNetworkSetting=" + locationNetworkSetting + ", networkInfoSetting="
-                + networkInfoSetting + ", outgoingCalls=" + outgoingCallsSetting + ", packageName=" + packageName
+                + deviceIdSetting + ", incomingCallsSetting=" + incomingCallsSetting + ", line1Number=" + line1Number
+                + ", line1NumberSetting=" + line1NumberSetting + ", locationGpsLat=" + locationGpsLat
+                + ", locationGpsLon=" + locationGpsLon + ", locationGpsSetting=" + locationGpsSetting
+                + ", locationNetworkLat=" + locationNetworkLat + ", locationNetworkLon=" + locationNetworkLon
+                + ", locationNetworkSetting=" + locationNetworkSetting + ", networkInfoSetting=" + networkInfoSetting
+                + ", outgoingCallsSetting=" + outgoingCallsSetting + ", packageName=" + packageName
                 + ", simInfoSetting=" + simInfoSetting + ", simSerialNumber=" + simSerialNumber
                 + ", simSerialNumberSetting=" + simSerialNumberSetting + ", subscriberId=" + subscriberId
                 + ", subscriberIdSetting=" + subscriberIdSetting + ", uid=" + uid + "]";
@@ -409,6 +421,7 @@ public class PrivacySettings implements Parcelable {
         this.accountsSetting = in.readByte();
         this.accountsAuthTokensSetting = in.readByte();
         this.outgoingCallsSetting = in.readByte();
+        this.incomingCallsSetting = in.readByte();
     }
     
     @Override
@@ -437,6 +450,7 @@ public class PrivacySettings implements Parcelable {
         dest.writeByte(accountsSetting);
         dest.writeByte(accountsAuthTokensSetting);
         dest.writeByte(outgoingCallsSetting);
+        dest.writeByte(incomingCallsSetting);
     }
     
     @Override
