@@ -94,6 +94,7 @@ import android.os.FileUtils.FileStatus;
 import android.os.storage.StorageManager;
 import android.privacy.IPrivacySettingsManager;
 import android.privacy.PrivacySettingsManager;
+import android.privacy.surrogate.PrivacyAccountManager;
 import android.privacy.surrogate.PrivacyLocationManager;
 import android.privacy.surrogate.PrivacyTelephonyManager;
 import android.provider.Settings;
@@ -991,9 +992,12 @@ class ContextImpl extends Context {
             return getDownloadManager();
         } else if (NFC_SERVICE.equals(name)) {
             return getNfcManager();
-        } else if ("privacy".equals(name)) {
+        }
+        // BEGIN privacy modification
+        else if ("privacy".equals(name)) {
             return getPrivacySettingsManager();
         }
+        // END privacy modification
 
         return null;
     }
@@ -1003,7 +1007,9 @@ class ContextImpl extends Context {
             if (mAccountManager == null) {
                 IBinder b = ServiceManager.getService(ACCOUNT_SERVICE);
                 IAccountManager service = IAccountManager.Stub.asInterface(b);
-                mAccountManager = new AccountManager(this, service);
+                // BEGIN privacy modification
+                mAccountManager = new PrivacyAccountManager(this, service);
+                // END privacy modification
             }
             return mAccountManager;
         }
@@ -1101,7 +1107,9 @@ class ContextImpl extends Context {
     private TelephonyManager getTelephonyManager() {
         synchronized (mSync) {
             if (mTelephonyManager == null) {
+                // BEGIN privacy modification
                 mTelephonyManager = new PrivacyTelephonyManager(getOuterContext());
+                // END privacy modification
             }
         }
         return mTelephonyManager;
@@ -1122,7 +1130,9 @@ class ContextImpl extends Context {
             if (sLocationManager == null) {
                 IBinder b = ServiceManager.getService(LOCATION_SERVICE);
                 ILocationManager service = ILocationManager.Stub.asInterface(b);
+                // BEGIN privacy modification
                 sLocationManager = new PrivacyLocationManager(service, getOuterContext());
+                // END privacy modification
             }
         }
         return sLocationManager;
@@ -1171,6 +1181,7 @@ class ContextImpl extends Context {
         return mUsbManager;
     }
 
+    // BEGIN privacy modification
     private PrivacySettingsManager getPrivacySettingsManager() {
         synchronized (mSync) {
             if (mPrivacySettingsManager == null) {
@@ -1181,6 +1192,7 @@ class ContextImpl extends Context {
         }
         return mPrivacySettingsManager;        
     }
+    // END privacy modification
     
     private Vibrator getVibrator() {
         synchronized (mSync) {

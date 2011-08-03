@@ -5,7 +5,7 @@ import android.os.Parcelable;
 
 import java.util.Random;
 
-public class PrivacySettings implements Parcelable {
+public final class PrivacySettings implements Parcelable {
     
     /**
      * Real value, provided by the unmodified Android framework.
@@ -76,6 +76,15 @@ public class PrivacySettings implements Parcelable {
     private byte accountsAuthTokensSetting;
     private byte outgoingCallsSetting;
     private byte incomingCallsSetting;
+    
+    private byte contactsSetting;
+    private byte calendarSetting;
+    private byte mmsSetting;
+    private byte smsSetting;
+    private byte callLogSetting;
+    private byte bookmarksSetting; // browser bookmarks and history
+    
+    private byte systemLogsSetting;
 
     public PrivacySettings(Integer _id, String packageName, int uid) {
         this._id = _id;
@@ -103,6 +112,13 @@ public class PrivacySettings implements Parcelable {
         this.accountsAuthTokensSetting = REAL;
         this.outgoingCallsSetting = REAL;
         this.incomingCallsSetting = REAL;
+        this.contactsSetting = REAL;
+        this.calendarSetting = REAL;
+        this.mmsSetting = REAL;
+        this.smsSetting = REAL;
+        this.callLogSetting = REAL;
+        this.bookmarksSetting = REAL;
+        this.systemLogsSetting = REAL;
     }
     
     public PrivacySettings(Integer id, String packageName, int uid, byte deviceIdSetting, String deviceId,
@@ -110,7 +126,9 @@ public class PrivacySettings implements Parcelable {
             String locationGpsLon, byte locationNetworkSetting, String locationNetworkLat, 
             String locationNetworkLon, byte networkInfoSetting, byte simInfoSetting, byte simSerialNumberSetting,
             String simSerialNumber, byte subscriberIdSetting, String subscriberId, byte accountsSetting, 
-            byte accountsAuthTokensSetting, byte outgoingCallsSetting, byte incomingCallsSetting) {
+            byte accountsAuthTokensSetting, byte outgoingCallsSetting, byte incomingCallsSetting, byte contactsSetting,
+            byte calendarSetting, byte mmsSetting, byte smsSetting, byte callLogSetting, byte bookmarksSetting, 
+            byte systemLogsSetting) {
         this._id = id;
         
         this.packageName = packageName;
@@ -136,6 +154,13 @@ public class PrivacySettings implements Parcelable {
         this.accountsAuthTokensSetting = accountsAuthTokensSetting;
         this.outgoingCallsSetting = outgoingCallsSetting;
         this.incomingCallsSetting = incomingCallsSetting;
+        this.contactsSetting = contactsSetting;
+        this.calendarSetting = calendarSetting;
+        this.mmsSetting = mmsSetting;
+        this.smsSetting = smsSetting;
+        this.callLogSetting = callLogSetting;
+        this.bookmarksSetting = bookmarksSetting;
+        this.systemLogsSetting = systemLogsSetting;
     }
 
     public Integer get_id() {
@@ -349,19 +374,78 @@ public class PrivacySettings implements Parcelable {
         this.incomingCallsSetting = incomingCallsSetting;
     }
 
+    public byte getContactsSetting() {
+        return contactsSetting;
+    }
+
+    public void setContactsSetting(byte contactsSetting) {
+        this.contactsSetting = contactsSetting;
+    }
+
+    public byte getCalendarSetting() {
+        return calendarSetting;
+    }
+
+    public void setCalendarSetting(byte calendarSetting) {
+        this.calendarSetting = calendarSetting;
+    }
+
+    public byte getMmsSetting() {
+        return mmsSetting;
+    }
+
+    public void setMmsSetting(byte mmsSetting) {
+        this.mmsSetting = mmsSetting;
+    }
+
+    public byte getSmsSetting() {
+        return smsSetting;
+    }
+
+    public void setSmsSetting(byte smsSetting) {
+        this.smsSetting = smsSetting;
+    }
+
+    public byte getCallLogSetting() {
+        return callLogSetting;
+    }
+
+    public void setCallLogSetting(byte callLogSetting) {
+        this.callLogSetting = callLogSetting;
+    }
+
+    public byte getBookmarksSetting() {
+        return bookmarksSetting;
+    }
+
+    public void setBookmarksSetting(byte bookmarksSetting) {
+        this.bookmarksSetting = bookmarksSetting;
+    }
+
+    public byte getSystemLogsSetting() {
+        return systemLogsSetting;
+    }
+
+    public void setSystemLogsSetting(byte systemLogsSetting) {
+        this.systemLogsSetting = systemLogsSetting;
+    }
+
     @Override
     public String toString() {
         return "PrivacySettings [_id=" + _id + ", accountsAuthTokensSetting=" + accountsAuthTokensSetting
-                + ", accountsSetting=" + accountsSetting + ", deviceId=" + deviceId + ", deviceIdSetting="
-                + deviceIdSetting + ", incomingCallsSetting=" + incomingCallsSetting + ", line1Number=" + line1Number
+                + ", accountsSetting=" + accountsSetting + ", bookmarksSetting=" + bookmarksSetting
+                + ", calendarSetting=" + calendarSetting + ", callLogSetting=" + callLogSetting + ", contactsSetting="
+                + contactsSetting + ", deviceId=" + deviceId + ", deviceIdSetting=" + deviceIdSetting
+                + ", incomingCallsSetting=" + incomingCallsSetting + ", line1Number=" + line1Number
                 + ", line1NumberSetting=" + line1NumberSetting + ", locationGpsLat=" + locationGpsLat
                 + ", locationGpsLon=" + locationGpsLon + ", locationGpsSetting=" + locationGpsSetting
                 + ", locationNetworkLat=" + locationNetworkLat + ", locationNetworkLon=" + locationNetworkLon
-                + ", locationNetworkSetting=" + locationNetworkSetting + ", networkInfoSetting=" + networkInfoSetting
-                + ", outgoingCallsSetting=" + outgoingCallsSetting + ", packageName=" + packageName
-                + ", simInfoSetting=" + simInfoSetting + ", simSerialNumber=" + simSerialNumber
-                + ", simSerialNumberSetting=" + simSerialNumberSetting + ", subscriberId=" + subscriberId
-                + ", subscriberIdSetting=" + subscriberIdSetting + ", uid=" + uid + "]";
+                + ", locationNetworkSetting=" + locationNetworkSetting + ", mmsSetting=" + mmsSetting
+                + ", networkInfoSetting=" + networkInfoSetting + ", outgoingCallsSetting=" + outgoingCallsSetting
+                + ", packageName=" + packageName + ", simInfoSetting=" + simInfoSetting + ", simSerialNumber="
+                + simSerialNumber + ", simSerialNumberSetting=" + simSerialNumberSetting + ", smsSetting=" + smsSetting
+                + ", subscriberId=" + subscriberId + ", subscriberIdSetting=" + subscriberIdSetting
+                + ", systemLogsSetting=" + systemLogsSetting + ", uid=" + uid + "]";
     }
 
     /**
@@ -422,6 +506,13 @@ public class PrivacySettings implements Parcelable {
         this.accountsAuthTokensSetting = in.readByte();
         this.outgoingCallsSetting = in.readByte();
         this.incomingCallsSetting = in.readByte();
+        this.contactsSetting = in.readByte();
+        this.calendarSetting = in.readByte();
+        this.mmsSetting = in.readByte();
+        this.smsSetting = in.readByte();
+        this.callLogSetting = in.readByte();
+        this.bookmarksSetting = in.readByte();
+        this.systemLogsSetting = in.readByte();
     }
     
     @Override
@@ -451,6 +542,13 @@ public class PrivacySettings implements Parcelable {
         dest.writeByte(accountsAuthTokensSetting);
         dest.writeByte(outgoingCallsSetting);
         dest.writeByte(incomingCallsSetting);
+        dest.writeByte(contactsSetting);
+        dest.writeByte(calendarSetting);
+        dest.writeByte(mmsSetting);
+        dest.writeByte(smsSetting);
+        dest.writeByte(callLogSetting);
+        dest.writeByte(bookmarksSetting);
+        dest.writeByte(systemLogsSetting);
     }
     
     @Override

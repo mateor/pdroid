@@ -166,8 +166,10 @@ class ServerThread extends Thread {
             Slog.i(TAG, "Content Manager");
             ContentService.main(context,
                     factoryTest == SystemServer.FACTORY_TEST_LOW_LEVEL);
-
+            
+            // BEGIN privacy modification
             addPrivacyService(context);
+            // END privacy modification
             
             Slog.i(TAG, "System Content Providers");
             ActivityManagerService.installSystemProviders();
@@ -547,6 +549,7 @@ class ServerThread extends Thread {
         Slog.d(TAG, "System ServerThread is exiting!");
     }
     
+    // BEGIN privacy modification
     private void addPrivacyService(Context context) {
         try {
             Slog.i(TAG, "Privacy Service");
@@ -555,6 +558,7 @@ class ServerThread extends Thread {
             Slog.e(TAG, "Failure starting Privacy Service", e);
         }        
     }
+    // END privacy modification
 }
 
 class DemoThread extends Thread

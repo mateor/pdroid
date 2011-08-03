@@ -11058,7 +11058,9 @@ public final class ActivityManagerService extends ActivityManagerNative
 
             Object nextReceiver = r.receivers.get(recIdx);
             
+            // BEGIN privacy modification
             enforcePrivacyPermission(nextReceiver, r);
+            // END privacy modification
             
             if (nextReceiver instanceof BroadcastFilter) {
                 // Simple case: this is a registered receiver who gets
@@ -11187,7 +11189,7 @@ public final class ActivityManagerService extends ActivityManagerNative
             mPendingBroadcastRecvIndex = recIdx;
         }
     }
-
+    // BEGIN privacy modification
     private void enforcePrivacyPermission(Object nextReceiver, BroadcastRecord r) {
         if (r != null && r.intent != null && r.intent.getAction() != null) {
             
@@ -11211,6 +11213,7 @@ public final class ActivityManagerService extends ActivityManagerNative
             }
         }
     }
+    // END privacy modification
     
     // =========================================================
     // INSTRUMENTATION

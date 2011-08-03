@@ -45,7 +45,14 @@ public class PrivacyDBAdapter {
             " accountsSetting INTEGER, " + 
             " accountsAuthTokensSetting INTEGER, " + 
             " outgoingCallsSetting INTEGER, " + 
-            " incomingCallsSetting INTEGER" + 
+            " incomingCallsSetting INTEGER, " + 
+            " contactsSetting INTEGER, " + 
+            " calendarSetting INTEGER, " + 
+            " mmsSetting INTEGER, " + 
+            " smsSetting INTEGER, " + 
+            " callLogSetting INTEGER, " + 
+            " bookmarksSetting INTEGER, " + 
+            " systemLogsSetting INTEGER" + 
             ");";
     
     private static final String[] DATABASE_FIELDS = new String[] { "_id", "packageName", "uid", 
@@ -53,7 +60,9 @@ public class PrivacyDBAdapter {
         "locationGpsLat", "locationGpsLon", "locationNetworkSetting", "locationNetworkLat", 
         "locationNetworkLon", "networkInfoSetting", "simInfoSetting", "simSerialNumberSetting", 
         "simSerialNumber", "subscriberIdSetting", "subscriberId", "accountsSetting", "accountsAuthTokensSetting", 
-        "outgoingCallsSetting", "incomingCallsSetting"};
+        "outgoingCallsSetting", "incomingCallsSetting", "contactsSetting", "calendarSetting", 
+        "mmsSetting", "smsSetting", "callLogSetting", "bookmarksSetting", 
+        "systemLogsSetting"};
 
     private SQLiteDatabase db;
 
@@ -66,7 +75,8 @@ public class PrivacyDBAdapter {
         if (canWrite && !new File(DATABASE_NAME).exists()) createDatabase();
     }
 
-    public PrivacySettings getSettings(String packageName, int uid) {
+    public synchronized PrivacySettings getSettings(String packageName, int uid) {
+        // TODO: remove synchronized and only close if other threads do not access db 
         Log.d(TAG, "getSettings: settings request for package: " + packageName + " UID: " + uid);
         PrivacySettings s = null;
         
@@ -100,7 +110,8 @@ public class PrivacyDBAdapter {
                             (byte)c.getShort(5), c.getString(6), (byte)c.getShort(7), c.getString(8), c.getString(9), (byte)c.getShort(10), 
                             c.getString(11), c.getString(12), (byte)c.getShort(13), (byte)c.getShort(14), (byte)c.getShort(15), 
                             c.getString(16), (byte)c.getShort(17), c.getString(18), (byte)c.getShort(19), (byte)c.getShort(20), 
-                            (byte)c.getShort(21), (byte)c.getShort(22));
+                            (byte)c.getShort(21), (byte)c.getShort(22), (byte)c.getShort(23), (byte)c.getShort(24), (byte)c.getShort(25), 
+                            (byte)c.getShort(26), (byte)c.getShort(27), (byte)c.getShort(28), (byte)c.getShort(29));
                     Log.d(TAG, "getSettings: found settings entry for package: " + packageName + " UID: " + uid);
                 } else if (c.getCount() > 1) {
                     // multiple settings entries have same package name AND UID, this should NEVER happen
@@ -121,7 +132,7 @@ public class PrivacyDBAdapter {
         return s;
     }
 
-    public boolean saveSettings(PrivacySettings s) {
+    public synchronized boolean saveSettings(PrivacySettings s) {
         boolean result = false;
         String packageName = s.getPackageName();
         Integer uid = s.getUid();
@@ -164,7 +175,15 @@ public class PrivacyDBAdapter {
         values.put("accountsAuthTokensSetting", s.getAccountsAuthTokensSetting());
         values.put("outgoingCallsSetting", s.getOutgoingCallsSetting());
         values.put("incomingCallsSetting", s.getIncomingCallsSetting());
-
+        
+        values.put("contactsSetting", s.getContactsSetting());
+        values.put("calendarSetting", s.getCalendarSetting());
+        values.put("mmsSetting", s.getMmsSetting());
+        values.put("smsSetting", s.getSmsSetting());
+        values.put("callLogSetting", s.getCallLogSetting());
+        values.put("bookmarksSetting", s.getBookmarksSetting());
+        values.put("systemLogsSetting", s.getSystemLogsSetting());
+        
         Log.d(TAG, "saveSettings: checking if entry exists already.");
         Cursor c = null;
         try {
@@ -208,7 +227,7 @@ public class PrivacyDBAdapter {
         return result;
     }
     
-    private void createDatabase() {
+    private synchronized void createDatabase() {
         Log.d(TAG, "Creating privacy.db in /data/system; Flags: OPEN_READWRITE CREATE_IF_NECESSARY");
         SQLiteDatabase db = 
             SQLiteDatabase.openDatabase(DATABASE_NAME, null, SQLiteDatabase.OPEN_READWRITE | SQLiteDatabase.CREATE_IF_NECESSARY);
