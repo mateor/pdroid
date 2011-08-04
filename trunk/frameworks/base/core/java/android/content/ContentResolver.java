@@ -259,10 +259,7 @@ public abstract class ContentResolver {
         if (provider == null) {
             return null;
         }
-        Log.d(TAG, "query - " + mContext.getPackageName() + " (" + Binder.getCallingUid() + ") URI: " + uri + 
-                " provider: " + provider + " projection: " + projection + " selection: " + selection + 
-                " selectionArgs: " + selectionArgs + " sortOrder: " + sortOrder);
-        
+
         try {
             long startTime = SystemClock.uptimeMillis();
             Cursor qCursor = provider.query(uri, projection, selection, selectionArgs, sortOrder);

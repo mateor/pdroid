@@ -145,7 +145,7 @@ public final class PrivacySettings implements Parcelable {
         this.locationNetworkLat = locationNetworkLat;
         this.locationNetworkLon = locationNetworkLon;
         this.networkInfoSetting = networkInfoSetting;
-        this.simInfoSetting = networkInfoSetting;
+        this.simInfoSetting = simInfoSetting;
         this.simSerialNumberSetting = simSerialNumberSetting;
         this.simSerialNumber = simSerialNumber;
         this.subscriberIdSetting = subscriberIdSetting;
