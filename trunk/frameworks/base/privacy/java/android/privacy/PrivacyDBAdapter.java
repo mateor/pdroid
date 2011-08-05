@@ -80,9 +80,14 @@ public class PrivacyDBAdapter {
         Log.d(TAG, "getSettings: settings request for package: " + packageName + " UID: " + uid);
         PrivacySettings s = null;
         
+        if (packageName == null) {
+            Log.e(TAG, "getSettings: insufficient application identifier - package name is required");
+            return s;
+        }
+        
         SQLiteDatabase db;
         try {
-             db = getReadableDatabase();
+            db = getReadableDatabase();
         } catch (SQLiteException e) {
             Log.e(TAG, "getSettings: database could not be opened");
             return null;
@@ -97,11 +102,11 @@ public class PrivacyDBAdapter {
 
             if (c != null) {
                 if (c.getCount() > 1) {
-                    // if we get multiple entries, try using UID as well 
-                    // not guaranteed to find existing settings but it should only affect some system applications
+                    // if we get multiple entries, try using UID as well; not guaranteed to find existing
+                    // settings for system applications (see above comment) but this is rather rare
                     Log.d(TAG, "getSettings: multiple settings entries found for package name: " + packageName
                             + "; trying with UID: " + uid);
-
+                    
                     c = db.query(DATABASE_TABLE, DATABASE_FIELDS, 
                             "packageName=? AND uid=?", new String[] { packageName, uid + "" }, null, null, null);
                 }

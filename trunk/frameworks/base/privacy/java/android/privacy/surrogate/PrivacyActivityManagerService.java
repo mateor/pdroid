@@ -2,22 +2,25 @@ package android.privacy.surrogate;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ResolveInfo;
+import android.os.Bundle;
 import android.privacy.PrivacySettings;
 import android.privacy.PrivacySettingsManager;
+import android.provider.Telephony;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
 /**
- * Does not extend but provides according privacy methods
+ * Provides privacy methods for ActivityManagerService
  */
-public final class PrivacyActivityManagerService /** extends ActivityManagerService **/ {
+public final class PrivacyActivityManagerService {
     
     private final static String TAG = "PrivacyActivityManagerService";
     
     private static PrivacySettingsManager pSetMan;
     
     /**
+     * Intercepts broadcasts and replaces the broadcast contents according to 
+     * privacy permissions
      * @param packageName may not be null
      * @param uid must be >= 0
      * @param intent intent.getAction() may not return null
@@ -27,7 +30,6 @@ public final class PrivacyActivityManagerService /** extends ActivityManagerServ
         PrivacySettings pSet = pSetMan.getSettings(packageName, uid);
         String action = intent.getAction();
         String output;
-        
         if (action.equals(Intent.ACTION_NEW_OUTGOING_CALL)) {
             output = intent.getStringExtra(Intent.EXTRA_PHONE_NUMBER);
             try {
@@ -36,7 +38,7 @@ public final class PrivacyActivityManagerService /** extends ActivityManagerServ
                     intent.putExtra(Intent.EXTRA_PHONE_NUMBER, output);
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                Log.e(TAG, "failed to enforce intent broadcast permission", e);
             }
             Log.d(TAG, "broadcasting intent " + action + " - " + packageName + " (" + uid + ") output: " + output);
         } else if (action.equals(TelephonyManager.ACTION_PHONE_STATE_CHANGED)) {
@@ -47,7 +49,29 @@ public final class PrivacyActivityManagerService /** extends ActivityManagerServ
                     intent.putExtra(TelephonyManager.EXTRA_INCOMING_NUMBER, output);
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                Log.e(TAG, "failed to enforce intent broadcast permission", e);
+            }
+            Log.d(TAG, "broadcasting intent " + action + " - " + packageName + " (" + uid + ") output: " + output);
+        } else if (action.equals(Telephony.Sms.Intents.SMS_RECEIVED_ACTION)) {
+            output = "[real]";
+            try {
+                if (pSet != null && pSet.getSmsSetting() != PrivacySettings.REAL) {
+                    output = "[empty]";
+                    intent.putExtras(new Bundle());
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "failed to enforce intent broadcast permission", e);
+            }
+            Log.d(TAG, "broadcasting intent " + action + " - " + packageName + " (" + uid + ") output: " + output);
+        } else if (action.equals(Telephony.Sms.Intents.WAP_PUSH_RECEIVED_ACTION)) {
+            output = "[real]";
+            try {
+                if (pSet != null && pSet.getMmsSetting() != PrivacySettings.REAL) {
+                    output = "[empty]";
+                    intent.putExtras(new Bundle());
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "failed to enforce intent broadcast permission", e);
             }
             Log.d(TAG, "broadcasting intent " + action + " - " + packageName + " (" + uid + ") output: " + output);
         }
