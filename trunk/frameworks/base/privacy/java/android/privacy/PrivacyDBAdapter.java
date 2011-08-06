@@ -10,12 +10,20 @@ import android.os.Binder;
 import android.util.Log;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 
 public class PrivacyDBAdapter {
 
     private static final String TAG = "PrivacyDBAdapter";
 
     private static final String DATABASE_NAME = "/data/system/privacy.db";
+    
+    /**
+     * Used to save settings for access from core libraries
+     */
+    private static final String SETTINGS_DIRECTORY = "/data/system/privacy";
 
     private static final String DATABASE_TABLE = "settings";
 
@@ -71,8 +79,11 @@ public class PrivacyDBAdapter {
         boolean canWrite = new File("/data/system/").canWrite();
         Log.d(TAG, "Constructing " + TAG + " for package: " +  context.getPackageName() + 
                 " UID: " + Binder.getCallingUid() + "; Write permission for /data/system/: " + canWrite);
-        // create the database if we have write permission and the DB does not exist
-        if (canWrite && !new File(DATABASE_NAME).exists()) createDatabase();
+        // create the database and settings directory if we have write permission and they do not exist
+        if (canWrite) {
+            if (!new File(DATABASE_NAME).exists()) createDatabase();
+            if (!new File(SETTINGS_DIRECTORY).exists()) createSettingsDir();
+        }
     }
 
     public synchronized PrivacySettings getSettings(String packageName, int uid) {
@@ -138,17 +149,15 @@ public class PrivacyDBAdapter {
     }
 
     public synchronized boolean saveSettings(PrivacySettings s) {
-        boolean result = false;
+        boolean result = true;
         String packageName = s.getPackageName();
         Integer uid = s.getUid();
         Log.d(TAG, "saveSettings: settings save request : " + s);
         
         if (packageName == null || packageName.isEmpty() || uid == null) {
             Log.e(TAG, "Either package name, UID or both is missing.");
-            return result;
+            return false;
         }
-
-        SQLiteDatabase db = getWritableDatabase();
 
         ContentValues values = new ContentValues();
         values.put("packageName", packageName);
@@ -189,14 +198,17 @@ public class PrivacyDBAdapter {
         values.put("bookmarksSetting", s.getBookmarksSetting());
         values.put("systemLogsSetting", s.getSystemLogsSetting());
         
-        Log.d(TAG, "saveSettings: checking if entry exists already.");
+        
+        SQLiteDatabase db = getWritableDatabase();
+        db.beginTransaction(); // make sure this ends up in a consistent state (DB and plain text files)
         Cursor c = null;
         try {
+            // save settings to the DB
+            Log.d(TAG, "saveSettings: checking if entry exists already");
             if (s.get_id() != null) { // entry exists -> update
 
                 Log.d(TAG, "saveSettings: updating existing entry");
                 db.update(DATABASE_TABLE, values, "_id=?", new String[] { s.get_id().toString() });
-                result = true;
 
             } else { // new entry -> insert if no duplicates exist
 
@@ -210,21 +222,47 @@ public class PrivacyDBAdapter {
                         Log.d(TAG, "saveSettings: updating existing entry");
                         db.update(DATABASE_TABLE, values, "packageName=? AND uid=?", 
                                 new String[] { s.getPackageName(), s.getUid() + "" });
-                        result = true;
                     } else if (c.getCount() == 0) { // no entries -> insert
                         Log.d(TAG, "saveSettings: inserting new entry");
                         db.insert(DATABASE_TABLE, null, values);
-                        result = true;
                     } else { // something went totally wrong and there are multiple entries for same identifier
-                        Log.e(TAG, "FATAL ERROR: duplicate entries in the privacy.db");
+                        result = false;
+                        Log.e(TAG, "saveSettings: duplicate entries in the privacy.db");
                     }
                 } else {
-                    Log.e(TAG, "FATAL ERROR: database access failed");
+                    result = false;
+                    // jump to catch block to avoid marking transaction as successful
+                    throw new Exception("saveSettings: database access failed");
                 }
             }
+            // save settings to plain text file (for access from core libraries)
+            File settingsDir = new File("/data/system/privacy/" + packageName + "/" + uid + "/");
+            File settingsPackageDir = new File("/data/system/privacy/" + packageName + "/");
+            File settingsFile = new File("/data/system/privacy/" + packageName + "/" + uid + "/systemLogsSetting");
+            try {
+                settingsDir.mkdirs();
+                settingsDir.setReadable(true, false);
+                settingsDir.setExecutable(true, false);
+                settingsPackageDir.setReadable(true, false);
+                settingsPackageDir.setExecutable(true, false);
+                settingsFile.createNewFile();
+                settingsFile.setReadable(true, false);
+                OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(settingsFile));
+                writer.append(s.getSystemLogsSetting() + "");
+                writer.flush();
+                writer.close();
+            } catch (IOException e) {
+                result = false;
+                // jump to catch block to avoid marking transaction as successful
+                throw new Exception("saveSettings: could not write settings to file"); 
+            }
+            // mark DB transaction successful (commit the changes)
+            db.setTransactionSuccessful();
         } catch (Exception e) {
-            e.printStackTrace();
+            result = false;
+            Log.e(TAG, "saveSettings: could not save settings", e);
         } finally {
+            db.endTransaction();
             if (c != null) c.close();
             if (db != null) db.close();
         }
@@ -240,6 +278,15 @@ public class PrivacyDBAdapter {
         db.execSQL(DATABASE_CREATE);
         Log.d(TAG, "PrivacyDBAdapter: Closing connection to privacy.db");
         db.close();
+    }
+    
+    private synchronized void createSettingsDir() {
+        // create settings directory (for settings accessed from core libraries)
+        File settingsDir = new File("/data/system/privacy/");
+        settingsDir.mkdirs();
+        settingsDir.setReadable(true, false); // make it readable for everybody
+        // for some reason reading the file only works if it is executable
+        settingsDir.setExecutable(true, false);    
     }
     
     private synchronized SQLiteDatabase getReadableDatabase() {

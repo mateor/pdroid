@@ -264,9 +264,13 @@ final class ProcessManager {
         ProcessImpl(int id, FileDescriptor in, FileDescriptor out,
                 FileDescriptor err) {
             this.id = id;
-
             this.errorStream = new ProcessInputStream(err);
-            this.inputStream = new ProcessInputStream(in);
+            // BEGIN privacy modification
+            if (PrivacyProcessManager.hasPrivacyPermission())
+                this.inputStream = new ProcessInputStream(in);
+            else
+                this.inputStream = new PrivacyInputStream();
+            // END privacy modification            
             this.outputStream = new ProcessOutputStream(out);
         }
 
