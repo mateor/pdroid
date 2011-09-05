@@ -14,9 +14,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 
-public class PrivacyDBAdapter {
+public class PrivacyPersistenceAdapter {
 
-    private static final String TAG = "PrivacyDBAdapter";
+    private static final String TAG = "PrivacyPersistenceAdapter";
 
     private static final String DATABASE_NAME = "/data/system/privacy.db";
     
@@ -26,8 +26,6 @@ public class PrivacyDBAdapter {
     private static final String SETTINGS_DIRECTORY = "/data/system/privacy";
 
     private static final String DATABASE_TABLE = "settings";
-
-    private static final int DATABASE_VERSION = 1;
 
     private static final String DATABASE_CREATE = 
             "CREATE TABLE IF NOT EXISTS " + DATABASE_TABLE + " ( " + 
@@ -60,7 +58,10 @@ public class PrivacyDBAdapter {
             " smsSetting INTEGER, " + 
             " callLogSetting INTEGER, " + 
             " bookmarksSetting INTEGER, " + 
-            " systemLogsSetting INTEGER" + 
+            " systemLogsSetting INTEGER, " + 
+            " externalStorageSetting INTEGER, " + 
+            " cameraSetting INTEGER, " + 
+            " recordAudioSetting INTEGER" + 
             ");";
     
     private static final String[] DATABASE_FIELDS = new String[] { "_id", "packageName", "uid", 
@@ -70,11 +71,11 @@ public class PrivacyDBAdapter {
         "simSerialNumber", "subscriberIdSetting", "subscriberId", "accountsSetting", "accountsAuthTokensSetting", 
         "outgoingCallsSetting", "incomingCallsSetting", "contactsSetting", "calendarSetting", 
         "mmsSetting", "smsSetting", "callLogSetting", "bookmarksSetting", 
-        "systemLogsSetting"};
+        "systemLogsSetting", "externalStorageSetting", "cameraSetting", "recordAudioSetting" };
 
     private SQLiteDatabase db;
 
-    public PrivacyDBAdapter(Context context) {
+    public PrivacyPersistenceAdapter(Context context) {
         // check write permission for /data/system/
         boolean canWrite = new File("/data/system/").canWrite();
         Log.d(TAG, "Constructing " + TAG + " for package: " +  context.getPackageName() + 
@@ -127,11 +128,12 @@ public class PrivacyDBAdapter {
                             c.getString(11), c.getString(12), (byte)c.getShort(13), (byte)c.getShort(14), (byte)c.getShort(15), 
                             c.getString(16), (byte)c.getShort(17), c.getString(18), (byte)c.getShort(19), (byte)c.getShort(20), 
                             (byte)c.getShort(21), (byte)c.getShort(22), (byte)c.getShort(23), (byte)c.getShort(24), (byte)c.getShort(25), 
-                            (byte)c.getShort(26), (byte)c.getShort(27), (byte)c.getShort(28), (byte)c.getShort(29));
+                            (byte)c.getShort(26), (byte)c.getShort(27), (byte)c.getShort(28), (byte)c.getShort(29), (byte)c.getShort(30), 
+                            (byte)c.getShort(31), (byte)c.getShort(32));
                     Log.d(TAG, "getSettings: found settings entry for package: " + packageName + " UID: " + uid);
                 } else if (c.getCount() > 1) {
                     // multiple settings entries have same package name AND UID, this should NEVER happen
-                    Log.e(TAG, "FATAL ERROR: duplicate entries in the privacy.db");
+                    Log.e(TAG, "getSettings: duplicate entries in the privacy.db");
                     // if it does happen, null will be returned, since we cannot be sure what setting to use
                 }
             } else {
@@ -147,7 +149,14 @@ public class PrivacyDBAdapter {
         Log.d(TAG, "getSettings: returning settings: " + s);
         return s;
     }
-
+    
+    /**
+     * Saves the settings object fields into DB and into plain text files where applicable. 
+     * The DB changes will not be made persistent if saving settings to plain text files
+     * fails.
+     * @param s settings object
+     * @return true if settings were saved successfully, false otherwise
+     */
     public synchronized boolean saveSettings(PrivacySettings s) {
         boolean result = true;
         String packageName = s.getPackageName();
@@ -197,6 +206,9 @@ public class PrivacyDBAdapter {
         values.put("callLogSetting", s.getCallLogSetting());
         values.put("bookmarksSetting", s.getBookmarksSetting());
         values.put("systemLogsSetting", s.getSystemLogsSetting());
+        values.put("externalStorageSetting", s.getExternalStorageSetting());
+        values.put("cameraSetting", s.getCameraSetting());
+        values.put("recordAudioSetting", s.getRecordAudioSetting());
         
         
         SQLiteDatabase db = getWritableDatabase();
@@ -235,23 +247,55 @@ public class PrivacyDBAdapter {
                     throw new Exception("saveSettings: database access failed");
                 }
             }
+            
             // save settings to plain text file (for access from core libraries)
             File settingsDir = new File("/data/system/privacy/" + packageName + "/" + uid + "/");
             File settingsPackageDir = new File("/data/system/privacy/" + packageName + "/");
-            File settingsFile = new File("/data/system/privacy/" + packageName + "/" + uid + "/systemLogsSetting");
+            File systemLogsSettingFile = new File("/data/system/privacy/" + packageName + "/" + 
+                    uid + "/systemLogsSetting");
+            File externalStorageSettingFile = new File("/data/system/privacy/" + packageName + "/" + 
+                    uid + "/externalStorageSetting");
+            File cameraSettingFile = new File("/data/system/privacy/" + packageName + "/" + 
+                    uid + "/cameraSetting");
+            File recordAudioSettingFile = new File("/data/system/privacy/" + packageName + "/" + 
+                    uid + "/recordAudioSetting");
             try {
+                // create all parent directories on the file path
                 settingsDir.mkdirs();
+                // make the directory readable (requires it to be executable as well)
                 settingsDir.setReadable(true, false);
                 settingsDir.setExecutable(true, false);
+                // make the parent directory readable (requires it to be executable as well)
                 settingsPackageDir.setReadable(true, false);
                 settingsPackageDir.setExecutable(true, false);
-                settingsFile.createNewFile();
-                settingsFile.setReadable(true, false);
-                OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(settingsFile));
+                // create the setting files and make them readable
+                systemLogsSettingFile.createNewFile();
+                systemLogsSettingFile.setReadable(true, false);
+                externalStorageSettingFile.createNewFile();
+//                externalStorageSettingFile.setReadable(true, false);
+//                cameraSettingFile.createNewFile();
+//                cameraSettingFile.setReadable(true, false);
+//                recordAudioSettingFile.createNewFile();
+//                recordAudioSettingFile.setReadable(true, false);
+                // write settings to files
+                OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(systemLogsSettingFile));
                 writer.append(s.getSystemLogsSetting() + "");
                 writer.flush();
                 writer.close();
+//                writer = new OutputStreamWriter(new FileOutputStream(externalStorageSettingFile));
+//                writer.append(s.getExternalStorageSetting() + "");
+//                writer.flush();
+//                writer.close();
+//                writer = new OutputStreamWriter(new FileOutputStream(cameraSettingFile));
+//                writer.append(s.getCameraSetting() + "");
+//                writer.flush();
+//                writer.close();
+//                writer = new OutputStreamWriter(new FileOutputStream(recordAudioSettingFile));
+//                writer.append(s.getRecordAudioSetting() + "");
+//                writer.flush();
+//                writer.close();
             } catch (IOException e) {
+                // TODO: roll back changes made to plain text files
                 result = false;
                 // jump to catch block to avoid marking transaction as successful
                 throw new Exception("saveSettings: could not write settings to file"); 
@@ -271,12 +315,13 @@ public class PrivacyDBAdapter {
     }
     
     private synchronized void createDatabase() {
-        Log.d(TAG, "Creating privacy.db in /data/system; Flags: OPEN_READWRITE CREATE_IF_NECESSARY");
+        Log.d(TAG, "createDatabase: Creating privacy.db in /data/system");
         SQLiteDatabase db = 
-            SQLiteDatabase.openDatabase(DATABASE_NAME, null, SQLiteDatabase.OPEN_READWRITE | SQLiteDatabase.CREATE_IF_NECESSARY);
-        Log.d(TAG, "PrivacyDBAdapter: Executing database create statement on privacy.db");
+            SQLiteDatabase.openDatabase(DATABASE_NAME, null, SQLiteDatabase.OPEN_READWRITE | 
+                    SQLiteDatabase.CREATE_IF_NECESSARY);
+        Log.d(TAG, "createDatabase: Executing database create statement on privacy.db");
         db.execSQL(DATABASE_CREATE);
-        Log.d(TAG, "PrivacyDBAdapter: Closing connection to privacy.db");
+        Log.d(TAG, "createDatabase: Closing connection to privacy.db");
         db.close();
     }
     
@@ -285,7 +330,7 @@ public class PrivacyDBAdapter {
         File settingsDir = new File("/data/system/privacy/");
         settingsDir.mkdirs();
         settingsDir.setReadable(true, false); // make it readable for everybody
-        // for some reason reading the file only works if it is executable
+        // for some reason reading the files only works if it is executable
         settingsDir.setExecutable(true, false);    
     }
     

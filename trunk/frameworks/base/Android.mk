@@ -179,7 +179,9 @@ LOCAL_SRC_FILES += \
 	media/java/android/media/IAudioFocusDispatcher.aidl \
 	media/java/android/media/IMediaScannerListener.aidl \
 	media/java/android/media/IMediaScannerService.aidl \
+	# BEGIN privacy-added
 	privacy/java/android/privacy/IPrivacySettingsManager.aidl \
+	# END privacy-added
 	telephony/java/com/android/internal/telephony/IPhoneStateListener.aidl \
 	telephony/java/com/android/internal/telephony/IPhoneSubInfo.aidl \
 	telephony/java/com/android/internal/telephony/ITelephony.aidl \
@@ -274,7 +276,9 @@ aidl_files := \
 	frameworks/base/graphics/java/android/graphics/Region.aidl \
 	frameworks/base/location/java/android/location/Criteria.aidl \
 	frameworks/base/location/java/android/location/Location.aidl \
+	# BEGIN privacy-added	
 	frameworks/base/privacy/java/android/privacy/PrivacySettings.aidl \
+	# END privacy-added	
 	frameworks/base/telephony/java/android/telephony/ServiceState.aidl \
 	frameworks/base/telephony/java/com/android/internal/telephony/IPhoneSubInfo.aidl \
 	frameworks/base/telephony/java/com/android/internal/telephony/ITelephony.aidl \

@@ -10,7 +10,7 @@ public class PrivacySettingsManagerService extends IPrivacySettingsManager.Stub 
 
     private String TAG = "PrivacySettingsManagerService";
 
-    private PrivacyDBAdapter DBAdapter;
+    private PrivacyPersistenceAdapter DBAdapter;
 
     private Context mContext;
     
@@ -22,7 +22,7 @@ public class PrivacySettingsManagerService extends IPrivacySettingsManager.Stub 
      */
     public PrivacySettingsManagerService(Context context) {
         mContext = context;
-        DBAdapter = new PrivacyDBAdapter(mContext);
+        DBAdapter = new PrivacyPersistenceAdapter(mContext);
         Log.d(TAG, "Initialized for package: " + context.getPackageName());
     }
 

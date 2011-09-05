@@ -13,10 +13,12 @@ public class PrivacyProcessManager {
     
     /**
      * Verifies if the current process has privacy access permission
-     * to the system logs 
+     * to the specified setting
+     * @param setting name of the setting file (e.g., systemLogsSetting or 
+     *          externalStorageSetting)
      * @return boolean true if permission is granted or false otherwise
      */
-    public static boolean hasPrivacyPermission() {
+    public static boolean hasPrivacyPermission(String setting) {
         String packageName = null;
         String uid = null;
         boolean output = true;
@@ -29,7 +31,7 @@ public class PrivacyProcessManager {
         }
         try {
             PrivacyFileReader freader = new PrivacyFileReader("/data/system/privacy/" + 
-                    packageName + "/" + uid + "/systemLogsSetting");
+                    packageName + "/" + uid + "/" + setting);
             String line = freader.readLine().trim();
             int systemLogsSetting = Integer.parseInt(line);
             freader.close();            
@@ -37,9 +39,9 @@ public class PrivacyProcessManager {
                 output = false;
             }
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            // no setting for this application; do nothing
         } catch (Exception e) {
-            System.err.println("PrivacyProcessManager: could not enforce privacy settings for system logs");
+            System.err.println("PrivacyProcessManager: could not read privacy settings: " + setting);
             e.printStackTrace();
         }
         return output;

@@ -993,11 +993,11 @@ class ContextImpl extends Context {
         } else if (NFC_SERVICE.equals(name)) {
             return getNfcManager();
         }
-        // BEGIN privacy modification
+        // BEGIN privacy-added
         else if ("privacy".equals(name)) {
             return getPrivacySettingsManager();
         }
-        // END privacy modification
+        // END privacy-added
 
         return null;
     }
@@ -1007,9 +1007,9 @@ class ContextImpl extends Context {
             if (mAccountManager == null) {
                 IBinder b = ServiceManager.getService(ACCOUNT_SERVICE);
                 IAccountManager service = IAccountManager.Stub.asInterface(b);
-                // BEGIN privacy modification
+                // BEGIN privacy-modified
                 mAccountManager = new PrivacyAccountManager(this, service);
-                // END privacy modification
+                // END privacy-modified
             }
             return mAccountManager;
         }
@@ -1107,9 +1107,9 @@ class ContextImpl extends Context {
     private TelephonyManager getTelephonyManager() {
         synchronized (mSync) {
             if (mTelephonyManager == null) {
-                // BEGIN privacy modification
+                // BEGIN privacy-modified
                 mTelephonyManager = new PrivacyTelephonyManager(getOuterContext());
-                // END privacy modification
+                // END privacy-modified
             }
         }
         return mTelephonyManager;
@@ -1130,9 +1130,9 @@ class ContextImpl extends Context {
             if (sLocationManager == null) {
                 IBinder b = ServiceManager.getService(LOCATION_SERVICE);
                 ILocationManager service = ILocationManager.Stub.asInterface(b);
-                // BEGIN privacy modification
+                // BEGIN privacy-modified
                 sLocationManager = new PrivacyLocationManager(service, getOuterContext());
-                // END privacy modification
+                // END privacy-modified
             }
         }
         return sLocationManager;
@@ -1181,7 +1181,7 @@ class ContextImpl extends Context {
         return mUsbManager;
     }
 
-    // BEGIN privacy modification
+    // BEGIN privacy-added
     private PrivacySettingsManager getPrivacySettingsManager() {
         synchronized (mSync) {
             if (mPrivacySettingsManager == null) {
@@ -1192,7 +1192,7 @@ class ContextImpl extends Context {
         }
         return mPrivacySettingsManager;        
     }
-    // END privacy modification
+    // END privacy-added
     
     private Vibrator getVibrator() {
         synchronized (mSync) {

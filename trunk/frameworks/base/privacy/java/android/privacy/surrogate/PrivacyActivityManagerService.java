@@ -27,10 +27,11 @@ public final class PrivacyActivityManagerService {
      */
     public static void enforcePrivacyPermission(String packageName, int uid, Intent intent, Context context) {
         if (pSetMan == null) pSetMan = (PrivacySettingsManager) context.getSystemService("privacy");
-        PrivacySettings pSet = pSetMan.getSettings(packageName, uid);
+        PrivacySettings pSet;
         String action = intent.getAction();
         String output;
         if (action.equals(Intent.ACTION_NEW_OUTGOING_CALL)) {
+            pSet = pSetMan.getSettings(packageName, uid);
             output = intent.getStringExtra(Intent.EXTRA_PHONE_NUMBER);
             try {
                 if (pSet != null && pSet.getOutgoingCallsSetting() != PrivacySettings.REAL) {
@@ -42,6 +43,7 @@ public final class PrivacyActivityManagerService {
             }
             Log.d(TAG, "broadcasting intent " + action + " - " + packageName + " (" + uid + ") output: " + output);
         } else if (action.equals(TelephonyManager.ACTION_PHONE_STATE_CHANGED)) {
+            pSet = pSetMan.getSettings(packageName, uid);
             output = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER);
             try {
                 if (pSet != null && pSet.getIncomingCallsSetting() != PrivacySettings.REAL) {
@@ -53,6 +55,7 @@ public final class PrivacyActivityManagerService {
             }
             Log.d(TAG, "broadcasting intent " + action + " - " + packageName + " (" + uid + ") output: " + output);
         } else if (action.equals(Telephony.Sms.Intents.SMS_RECEIVED_ACTION)) {
+            pSet = pSetMan.getSettings(packageName, uid);
             output = "[real]";
             try {
                 if (pSet != null && pSet.getSmsSetting() != PrivacySettings.REAL) {
@@ -64,6 +67,7 @@ public final class PrivacyActivityManagerService {
             }
             Log.d(TAG, "broadcasting intent " + action + " - " + packageName + " (" + uid + ") output: " + output);
         } else if (action.equals(Telephony.Sms.Intents.WAP_PUSH_RECEIVED_ACTION)) {
+            pSet = pSetMan.getSettings(packageName, uid);
             output = "[real]";
             try {
                 if (pSet != null && pSet.getMmsSetting() != PrivacySettings.REAL) {

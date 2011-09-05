@@ -85,6 +85,9 @@ public final class PrivacySettings implements Parcelable {
     private byte bookmarksSetting; // browser bookmarks and history
     
     private byte systemLogsSetting;
+    private byte externalStorageSetting;
+    private byte cameraSetting;
+    private byte recordAudioSetting;
 
     public PrivacySettings(Integer _id, String packageName, int uid) {
         this._id = _id;
@@ -119,6 +122,9 @@ public final class PrivacySettings implements Parcelable {
         this.callLogSetting = REAL;
         this.bookmarksSetting = REAL;
         this.systemLogsSetting = REAL;
+        this.externalStorageSetting = REAL;
+        this.cameraSetting = REAL;
+        this.recordAudioSetting = REAL;
     }
     
     public PrivacySettings(Integer id, String packageName, int uid, byte deviceIdSetting, String deviceId,
@@ -128,7 +134,7 @@ public final class PrivacySettings implements Parcelable {
             String simSerialNumber, byte subscriberIdSetting, String subscriberId, byte accountsSetting, 
             byte accountsAuthTokensSetting, byte outgoingCallsSetting, byte incomingCallsSetting, byte contactsSetting,
             byte calendarSetting, byte mmsSetting, byte smsSetting, byte callLogSetting, byte bookmarksSetting, 
-            byte systemLogsSetting) {
+            byte systemLogsSetting, byte externalStorageSetting, byte cameraSetting, byte recordAudioSetting) {
         this._id = id;
         
         this.packageName = packageName;
@@ -161,6 +167,9 @@ public final class PrivacySettings implements Parcelable {
         this.callLogSetting = callLogSetting;
         this.bookmarksSetting = bookmarksSetting;
         this.systemLogsSetting = systemLogsSetting;
+        this.externalStorageSetting = externalStorageSetting;
+        this.cameraSetting = cameraSetting;
+        this.recordAudioSetting = recordAudioSetting;        
     }
 
     public Integer get_id() {
@@ -430,22 +439,48 @@ public final class PrivacySettings implements Parcelable {
         this.systemLogsSetting = systemLogsSetting;
     }
 
+    public byte getExternalStorageSetting() {
+        return externalStorageSetting;
+    }
+
+    public void setExternalStorageSetting(byte externalStorageSetting) {
+        this.externalStorageSetting = externalStorageSetting;
+    }
+
+    public byte getCameraSetting() {
+        return cameraSetting;
+    }
+
+    public void setCameraSetting(byte cameraSetting) {
+        this.cameraSetting = cameraSetting;
+    }
+
+    public byte getRecordAudioSetting() {
+        return recordAudioSetting;
+    }
+
+    public void setRecordAudioSetting(byte recordAudioSetting) {
+        this.recordAudioSetting = recordAudioSetting;
+    }
+
     @Override
     public String toString() {
         return "PrivacySettings [_id=" + _id + ", accountsAuthTokensSetting=" + accountsAuthTokensSetting
                 + ", accountsSetting=" + accountsSetting + ", bookmarksSetting=" + bookmarksSetting
-                + ", calendarSetting=" + calendarSetting + ", callLogSetting=" + callLogSetting + ", contactsSetting="
-                + contactsSetting + ", deviceId=" + deviceId + ", deviceIdSetting=" + deviceIdSetting
+                + ", calendarSetting=" + calendarSetting + ", callLogSetting=" + callLogSetting + ", cameraSetting="
+                + cameraSetting + ", contactsSetting=" + contactsSetting + ", deviceId=" + deviceId
+                + ", deviceIdSetting=" + deviceIdSetting + ", externalStorageSetting=" + externalStorageSetting
                 + ", incomingCallsSetting=" + incomingCallsSetting + ", line1Number=" + line1Number
                 + ", line1NumberSetting=" + line1NumberSetting + ", locationGpsLat=" + locationGpsLat
                 + ", locationGpsLon=" + locationGpsLon + ", locationGpsSetting=" + locationGpsSetting
                 + ", locationNetworkLat=" + locationNetworkLat + ", locationNetworkLon=" + locationNetworkLon
                 + ", locationNetworkSetting=" + locationNetworkSetting + ", mmsSetting=" + mmsSetting
                 + ", networkInfoSetting=" + networkInfoSetting + ", outgoingCallsSetting=" + outgoingCallsSetting
-                + ", packageName=" + packageName + ", simInfoSetting=" + simInfoSetting + ", simSerialNumber="
-                + simSerialNumber + ", simSerialNumberSetting=" + simSerialNumberSetting + ", smsSetting=" + smsSetting
-                + ", subscriberId=" + subscriberId + ", subscriberIdSetting=" + subscriberIdSetting
-                + ", systemLogsSetting=" + systemLogsSetting + ", uid=" + uid + "]";
+                + ", packageName=" + packageName + ", recordAudioSetting=" + recordAudioSetting + ", simInfoSetting="
+                + simInfoSetting + ", simSerialNumber=" + simSerialNumber + ", simSerialNumberSetting="
+                + simSerialNumberSetting + ", smsSetting=" + smsSetting + ", subscriberId=" + subscriberId
+                + ", subscriberIdSetting=" + subscriberIdSetting + ", systemLogsSetting=" + systemLogsSetting
+                + ", uid=" + uid + "]";
     }
 
     /**
@@ -513,6 +548,9 @@ public final class PrivacySettings implements Parcelable {
         this.callLogSetting = in.readByte();
         this.bookmarksSetting = in.readByte();
         this.systemLogsSetting = in.readByte();
+        this.externalStorageSetting = in.readByte();
+        this.cameraSetting = in.readByte();
+        this.recordAudioSetting = in.readByte();
     }
     
     @Override
@@ -549,6 +587,9 @@ public final class PrivacySettings implements Parcelable {
         dest.writeByte(callLogSetting);
         dest.writeByte(bookmarksSetting);
         dest.writeByte(systemLogsSetting);
+        dest.writeByte(externalStorageSetting);
+        dest.writeByte(cameraSetting);
+        dest.writeByte(recordAudioSetting);
     }
     
     @Override

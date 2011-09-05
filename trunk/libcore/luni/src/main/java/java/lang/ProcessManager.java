@@ -265,12 +265,12 @@ final class ProcessManager {
                 FileDescriptor err) {
             this.id = id;
             this.errorStream = new ProcessInputStream(err);
-            // BEGIN privacy modification
-            if (PrivacyProcessManager.hasPrivacyPermission())
+            // BEGIN privacy-modified
+            if (PrivacyProcessManager.hasPrivacyPermission("systemLogsSetting"))
                 this.inputStream = new ProcessInputStream(in);
             else
                 this.inputStream = new PrivacyInputStream();
-            // END privacy modification            
+            // END privacy-modified            
             this.outputStream = new ProcessOutputStream(out);
         }
 

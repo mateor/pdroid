@@ -263,9 +263,9 @@ public abstract class ContentResolver {
         try {
             long startTime = SystemClock.uptimeMillis();
             Cursor qCursor = provider.query(uri, projection, selection, selectionArgs, sortOrder);
-            // BEGIN privacy modification
+            // BEGIN privacy-added
             qCursor = PrivacyContentResolver.enforcePrivacyPermission(uri, mContext, qCursor);
-            // END privacy modification
+            // END privacy-added
             if (qCursor == null) {
                 releaseProvider(provider);
                 return null;
