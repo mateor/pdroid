@@ -28,14 +28,15 @@ import android.database.Cursor;
 import android.database.CursorWrapper;
 import android.database.IContentObserver;
 import android.net.Uri;
-import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.SystemClock;
+// BEGIN privacy-added
 import android.privacy.surrogate.PrivacyContentResolver;
+// END privacy-added
 import android.text.TextUtils;
 import android.util.Config;
 import android.util.EventLog;
@@ -259,7 +260,6 @@ public abstract class ContentResolver {
         if (provider == null) {
             return null;
         }
-
         try {
             long startTime = SystemClock.uptimeMillis();
             Cursor qCursor = provider.query(uri, projection, selection, selectionArgs, sortOrder);

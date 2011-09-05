@@ -76,6 +76,7 @@ JNI_H_INCLUDE := $(call include-path-for,libnativehelper)/nativehelper
 # is so common and the other framework libraries can have mutual
 # interdependencies.
 #
+# BEGIN privacy-added: privacy
 FRAMEWORKS_BASE_SUBDIRS := \
 	$(addsuffix /java, \
 	    core \
@@ -91,6 +92,7 @@ FRAMEWORKS_BASE_SUBDIRS := \
 	    keystore \
 	    voip \
 	 )
+# END privacy-added: privacy
 
 #
 # A version of FRAMEWORKS_BASE_SUBDIRS that is expanded to full paths from

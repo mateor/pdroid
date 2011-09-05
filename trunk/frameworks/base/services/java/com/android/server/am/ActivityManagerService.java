@@ -55,10 +55,10 @@ import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
-import android.content.IIntentReceiver;
-import android.content.IIntentSender;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.IIntentReceiver;
+import android.content.IIntentSender;
 import android.content.IntentSender;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
@@ -98,17 +98,12 @@ import android.os.ServiceManager;
 import android.os.StrictMode;
 import android.os.SystemClock;
 import android.os.SystemProperties;
-import android.privacy.PrivacySettings;
-import android.privacy.PrivacySettingsManager;
-import android.privacy.surrogate.PrivacyActivityManagerService;
 import android.provider.Settings;
-import android.provider.Telephony;
-import android.telephony.TelephonyManager;
 import android.util.Config;
 import android.util.EventLog;
+import android.util.Slog;
 import android.util.Log;
 import android.util.PrintWriterPrinter;
-import android.util.Slog;
 import android.util.SparseArray;
 import android.util.TimeUtils;
 import android.view.Gravity;
@@ -129,6 +124,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.lang.IllegalStateException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -142,6 +138,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+// BEGIN privacy-added
+import android.privacy.surrogate.PrivacyActivityManagerService;
+// END privacy-added
 
 public final class ActivityManagerService extends ActivityManagerNative
         implements Watchdog.Monitor, BatteryStatsImpl.BatteryCallback {
@@ -11057,11 +11056,9 @@ public final class ActivityManagerService extends ActivityManagerNative
             }
 
             Object nextReceiver = r.receivers.get(recIdx);
-            
             // BEGIN privacy modification
             enforcePrivacyPermission(nextReceiver, r);
             // END privacy modification
-            
             if (nextReceiver instanceof BroadcastFilter) {
                 // Simple case: this is a registered receiver who gets
                 // a direct call.
@@ -11195,7 +11192,7 @@ public final class ActivityManagerService extends ActivityManagerNative
             
             String packageName = null;
             int uid = -1;
-            try {
+            try { // try to get intent receiver information
                 if (nextReceiver instanceof BroadcastFilter) {
                     packageName = ((BroadcastFilter) nextReceiver).receiverList.app.info.packageName;
                     uid = ((BroadcastFilter) nextReceiver).receiverList.app.info.uid;
@@ -11204,8 +11201,9 @@ public final class ActivityManagerService extends ActivityManagerNative
                     uid = ((ResolveInfo) nextReceiver).activityInfo.applicationInfo.uid;
                 }
             } catch (Exception e) {
-                e.printStackTrace();
-                return; // do nothing
+                // if above information is not available, exception will be thrown
+                // do nothing, this is not our intent
+                return;
             }
             
             if (packageName != null && uid != -1) {
@@ -11214,7 +11212,7 @@ public final class ActivityManagerService extends ActivityManagerNative
         }
     }
     // END privacy modification
-    
+
     // =========================================================
     // INSTRUMENTATION
     // =========================================================

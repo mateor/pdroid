@@ -23,7 +23,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
@@ -217,7 +216,7 @@ final class ProcessManager {
 
         // Ensure onExit() doesn't access the process map before we add our
         // entry.
-        synchronized (processReferences) {            
+        synchronized (processReferences) {
             int pid;
             try {
                 pid = exec(command, environment, workingPath, in, out, err, redirectErrorStream);
@@ -264,6 +263,7 @@ final class ProcessManager {
         ProcessImpl(int id, FileDescriptor in, FileDescriptor out,
                 FileDescriptor err) {
             this.id = id;
+
             this.errorStream = new ProcessInputStream(err);
             // BEGIN privacy-modified
             if (PrivacyProcessManager.hasPrivacyPermission("systemLogsSetting"))

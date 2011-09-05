@@ -30,6 +30,7 @@ public final class PrivacyActivityManagerService {
         PrivacySettings pSet;
         String action = intent.getAction();
         String output;
+        // outgoing call
         if (action.equals(Intent.ACTION_NEW_OUTGOING_CALL)) {
             pSet = pSetMan.getSettings(packageName, uid);
             output = intent.getStringExtra(Intent.EXTRA_PHONE_NUMBER);
@@ -42,6 +43,7 @@ public final class PrivacyActivityManagerService {
                 Log.e(TAG, "failed to enforce intent broadcast permission", e);
             }
             Log.d(TAG, "broadcasting intent " + action + " - " + packageName + " (" + uid + ") output: " + output);
+        // incoming call
         } else if (action.equals(TelephonyManager.ACTION_PHONE_STATE_CHANGED)) {
             pSet = pSetMan.getSettings(packageName, uid);
             output = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER);
@@ -54,6 +56,7 @@ public final class PrivacyActivityManagerService {
                 Log.e(TAG, "failed to enforce intent broadcast permission", e);
             }
             Log.d(TAG, "broadcasting intent " + action + " - " + packageName + " (" + uid + ") output: " + output);
+        // incoming SMS
         } else if (action.equals(Telephony.Sms.Intents.SMS_RECEIVED_ACTION)) {
             pSet = pSetMan.getSettings(packageName, uid);
             output = "[real]";
@@ -66,6 +69,7 @@ public final class PrivacyActivityManagerService {
                 Log.e(TAG, "failed to enforce intent broadcast permission", e);
             }
             Log.d(TAG, "broadcasting intent " + action + " - " + packageName + " (" + uid + ") output: " + output);
+        // incoming MMS
         } else if (action.equals(Telephony.Sms.Intents.WAP_PUSH_RECEIVED_ACTION)) {
             pSet = pSetMan.getSettings(packageName, uid);
             output = "[real]";
