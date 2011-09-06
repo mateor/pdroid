@@ -17,7 +17,6 @@
 package android.privacy.surrogate;
 
 import android.content.Context;
-import android.location.Location;
 import android.os.Binder;
 import android.privacy.PrivacySettings;
 import android.privacy.PrivacySettingsManager;

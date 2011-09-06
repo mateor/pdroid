@@ -23,7 +23,6 @@ public class PrivacySettingsManagerService extends IPrivacySettingsManager.Stub 
     public PrivacySettingsManagerService(Context context) {
         mContext = context;
         DBAdapter = new PrivacyPersistenceAdapter(mContext);
-        Log.d(TAG, "Initialized for package: " + context.getPackageName());
     }
 
     public PrivacySettings getSettings(String packageName, int uid) {
