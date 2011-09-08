@@ -21,6 +21,8 @@ public class PrivacySettingsManagerService extends IPrivacySettingsManager.Stub 
      * @param context
      */
     public PrivacySettingsManagerService(Context context) {
+        Log.d(TAG, "PrivacySettingsManagerService: initializing for package: " + context.getPackageName() + 
+                " UID:" + Binder.getCallingUid());
         mContext = context;
         DBAdapter = new PrivacyPersistenceAdapter(mContext);
     }

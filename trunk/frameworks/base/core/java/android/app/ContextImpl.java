@@ -214,7 +214,7 @@ class ContextImpl extends Context {
     private DownloadManager mDownloadManager = null;
     private NfcManager mNfcManager = null;
     // BEGIN privacy-added
-    private PrivacySettingsManager mPrivacySettingsManager = null;
+    private static PrivacySettingsManager sPrivacySettingsManager = null;
     // END privacy-added
 
     private final Object mSync = new Object();
@@ -1188,13 +1188,13 @@ class ContextImpl extends Context {
     // BEGIN privacy-added
     private PrivacySettingsManager getPrivacySettingsManager() {
         synchronized (mSync) {
-            if (mPrivacySettingsManager == null) {
+            if (sPrivacySettingsManager == null || !sPrivacySettingsManager.isServiceAvailable()) {
                 IBinder b = ServiceManager.getService("privacy");
                 IPrivacySettingsManager service = IPrivacySettingsManager.Stub.asInterface(b);
-                mPrivacySettingsManager = new PrivacySettingsManager(getOuterContext(), service);
+                sPrivacySettingsManager = new PrivacySettingsManager(getOuterContext(), service);
             }
         }
-        return mPrivacySettingsManager;        
+        return sPrivacySettingsManager;
     }
     // END privacy-added
     private Vibrator getVibrator() {

@@ -23,6 +23,8 @@ public class PrivacySettingsManager {
      * @param context
      */
     public PrivacySettingsManager(Context context, IPrivacySettingsManager service) {
+        Log.d(TAG, "PrivacySettingsManager - initializing for package: " + context.getPackageName() + 
+                " UID:" + Binder.getCallingUid());
         mService = service;
         mContext = context;
     }
@@ -33,7 +35,7 @@ public class PrivacySettingsManager {
             if (mService != null) {
                 return mService.getSettings(packageName, uid);
             } else {
-                Log.e(TAG, "PrivacySettingsManagerService not ready");
+                Log.e(TAG, "getSettings - PrivacySettingsManagerService is null");
                 return null;
             }
         } catch (RemoteException e) {
@@ -44,16 +46,25 @@ public class PrivacySettingsManager {
 
     public boolean saveSettings(PrivacySettings settings) {
         try {
-            Log.d(TAG, "saveSettings: " + settings);
+            Log.d(TAG, "saveSettings - " + settings);
             if (mService != null) {            
                 return mService.saveSettings(settings);
             } else {
-                Log.e(TAG, "PrivacySettingsManagerService not ready");
+                Log.e(TAG, "saveSettings - PrivacySettingsManagerService is null");
                 return false;
             }
         } catch (RemoteException e) {
             Log.e(TAG, "RemoteException in saveSettings: ", e);
             return false;
         }
+    }
+    
+    /**
+     * Checks whether the PrivacySettingsManagerService is available. For some reason,
+     * occasionally it appears to be null. In this case it should be initialized again.
+     */
+    public boolean isServiceAvailable() {
+        if (mService != null) return true;
+        return false;
     }
 }
