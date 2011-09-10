@@ -93,9 +93,6 @@ public final class PrivacyContentResolver {
                     }
                     
                 }
-//                else if (auth.equals("gmail-ls") { // read googlemail
-//                    
-//                }
             }
             Log.d(TAG, "query - " + packageName + " (" + uid + ") auth: " + auth + " output: " + output_label);
             return output;
