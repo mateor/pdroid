@@ -19,6 +19,10 @@ import android.util.Log;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Provides privacy handling for {@link android.accounts.AccountManager}
+ * @author Anonymous
+ */
 public final class PrivacyAccountManager extends AccountManager {
     
     private final String TAG = "PrivacyAccountManager";

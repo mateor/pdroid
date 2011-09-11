@@ -5,6 +5,10 @@ import android.os.Parcelable;
 
 import java.util.Random;
 
+/**
+ * Holds privacy settings for access to all private data types for a single application
+ * @author Anonymous 
+ */
 public final class PrivacySettings implements Parcelable {
     
     /**

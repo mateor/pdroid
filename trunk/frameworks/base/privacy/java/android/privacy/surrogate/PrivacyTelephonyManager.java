@@ -31,6 +31,10 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Provides privacy handling for {@link android.telephony.TelephonyManager}
+ * @author Anonymous
+ */
 public final class PrivacyTelephonyManager extends TelephonyManager {
 
     private static final String TAG = "PrivacyTelephonyManager";

@@ -17,6 +17,10 @@ import android.privacy.PrivacySettings;
 import android.privacy.PrivacySettingsManager;
 import android.util.Log;
 
+/**
+ * Provides privacy handling for {@link android.location.LocationManager}
+ * @author Anonymous
+ */
 public final class PrivacyLocationManager extends LocationManager {
 
     private static final String TAG = "PrivacyLocationManager";
@@ -35,11 +39,9 @@ public final class PrivacyLocationManager extends LocationManager {
 
     @Override
     public boolean addNmeaListener(NmeaListener listener) {
-        // TODO: implement a custom listener
         PrivacySettings pSet = mPrivSetManager.getSettings(mContext.getPackageName(), Binder.getCallingUid());
         if (pSet.getLocationGpsSetting() != PrivacySettings.REAL) return false;
         Log.d(TAG, "addNmeaListener - " + mContext.getPackageName() + " (" + Binder.getCallingUid() + ") output: [real value]");
-        
         return super.addNmeaListener(listener);
     }
 

@@ -2,21 +2,19 @@
 package android.privacy;
 
 import android.content.Context;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Binder;
 import android.os.RemoteException;
 import android.util.Log;
 
-
+/**
+ * Provides API access to the privacy settings
+ * @author Anonymous
+ */
 public class PrivacySettingsManager {
 
     private String TAG = "PrivacySettingsManager";
     
-    private IPrivacySettingsManager mService;
-    
-    private Context mContext;
+    private IPrivacySettingsManager service;
     
     /**
      * @hide - this should be instantiated through Context.getSystemService
@@ -25,15 +23,14 @@ public class PrivacySettingsManager {
     public PrivacySettingsManager(Context context, IPrivacySettingsManager service) {
         Log.d(TAG, "PrivacySettingsManager - initializing for package: " + context.getPackageName() + 
                 " UID:" + Binder.getCallingUid());
-        mService = service;
-        mContext = context;
+        this.service = service;
     }
 
     public PrivacySettings getSettings(String packageName, int uid) {
         try {
             Log.d(TAG, "getSettings for package: " + packageName + " UID: " + uid);
-            if (mService != null) {
-                return mService.getSettings(packageName, uid);
+            if (service != null) {
+                return service.getSettings(packageName, uid);
             } else {
                 Log.e(TAG, "getSettings - PrivacySettingsManagerService is null");
                 return null;
@@ -47,8 +44,8 @@ public class PrivacySettingsManager {
     public boolean saveSettings(PrivacySettings settings) {
         try {
             Log.d(TAG, "saveSettings - " + settings);
-            if (mService != null) {            
-                return mService.saveSettings(settings);
+            if (service != null) {            
+                return service.saveSettings(settings);
             } else {
                 Log.e(TAG, "saveSettings - PrivacySettingsManagerService is null");
                 return false;
@@ -64,7 +61,7 @@ public class PrivacySettingsManager {
      * occasionally it appears to be null. In this case it should be initialized again.
      */
     public boolean isServiceAvailable() {
-        if (mService != null) return true;
+        if (service != null) return true;
         return false;
     }
 }

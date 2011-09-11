@@ -14,6 +14,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 
+/**
+ * Responsible for persisting privacy settings to built-in memory
+ * @author Anonymous
+ */
 public class PrivacyPersistenceAdapter {
 
     private static final String TAG = "PrivacyPersistenceAdapter";
@@ -21,7 +25,7 @@ public class PrivacyPersistenceAdapter {
     /**
      * Number of threads currently reading the database
      */
-    private static int readingThreads;
+    private static Integer readingThreads;
 
     private static final String DATABASE_NAME = "/data/system/privacy.db";
     
@@ -95,7 +99,12 @@ public class PrivacyPersistenceAdapter {
 
     public PrivacySettings getSettings(String packageName, int uid) {
         Log.d(TAG, "getSettings - settings request for package: " + packageName + " UID: " + uid);
-        readingThreads++;
+        
+        // indicate that the DB is being read to prevent closing by other threads
+        synchronized(readingThreads) {
+            readingThreads++;
+        }
+        
         PrivacySettings s = null;
         
         if (packageName == null) {
@@ -148,10 +157,12 @@ public class PrivacyPersistenceAdapter {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            readingThreads--;
             if (c != null) c.close();
-            // only close DB if no other threads are reading
-            if (readingThreads == 0 && db != null) db.close();
+            synchronized (readingThreads) {
+                readingThreads--;
+                // only close DB if no other threads are reading
+                if (readingThreads == 0 && db != null) db.close();
+            }
         }
         
         Log.d(TAG, "getSettings - returning settings: " + s);
@@ -214,9 +225,9 @@ public class PrivacyPersistenceAdapter {
         values.put("callLogSetting", s.getCallLogSetting());
         values.put("bookmarksSetting", s.getBookmarksSetting());
         values.put("systemLogsSetting", s.getSystemLogsSetting());
-        values.put("externalStorageSetting", s.getExternalStorageSetting());
-        values.put("cameraSetting", s.getCameraSetting());
-        values.put("recordAudioSetting", s.getRecordAudioSetting());
+//        values.put("externalStorageSetting", s.getExternalStorageSetting());
+//        values.put("cameraSetting", s.getCameraSetting());
+//        values.put("recordAudioSetting", s.getRecordAudioSetting());
         
         
         SQLiteDatabase db = getWritableDatabase();

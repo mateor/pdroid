@@ -16,7 +16,8 @@ import android.provider.Telephony.Sms;
 import android.util.Log;
 
 /**
- * Provides privacy handling for the {@link android.content.ContentResolver} class
+ * Provides privacy handling for {@link android.content.ContentResolver}
+ * @author Anonymous 
  */
 public final class PrivacyContentResolver {
     
@@ -28,6 +29,7 @@ public final class PrivacyContentResolver {
      * Returns a dummy database cursor if access is restricted by privacy settings
      * @param uri
      * @param context
+     * @param realCursor
      */
     public static Cursor enforcePrivacyPermission(Uri uri, Context context, Cursor realCursor) {
         if (uri != null) {

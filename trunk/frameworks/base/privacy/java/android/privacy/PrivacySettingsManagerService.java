@@ -3,9 +3,13 @@ package android.privacy;
 
 import android.content.Context;
 import android.os.Binder;
-import android.os.IBinder;
 import android.util.Log;
 
+/**
+ * PrivacySettingsManager's counterpart running in the system process, which
+ * allows write access to /data/
+ * @author Anonymous
+ */
 public class PrivacySettingsManagerService extends IPrivacySettingsManager.Stub {
 
     private String TAG = "PrivacySettingsManagerService";

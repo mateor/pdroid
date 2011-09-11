@@ -9,7 +9,7 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 
 /**
- * Provides privacy methods for ActivityManagerService
+ * Provides privacy handling for {@link com.android.server.am.ActivityManagerService}
  * @author Anonymous
  */
 public final class PrivacyActivityManagerService {
