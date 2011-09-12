@@ -26,19 +26,19 @@ import java.util.concurrent.TimeUnit;
 public final class PrivacyAccountManager extends AccountManager {
     
     private final String TAG = "PrivacyAccountManager";
-    private Context mContext;
-    private PrivacySettingsManager mPrivSetManager;    
+    private Context context;
+    private PrivacySettingsManager pSetMan;    
 
     public PrivacyAccountManager(Context context, IAccountManager service) {
         super(context, service);
-        mContext = context;
-        mPrivSetManager = (PrivacySettingsManager) context.getSystemService("privacy");  
+        this.context = context;
+        pSetMan = (PrivacySettingsManager) context.getSystemService("privacy");  
     }
 
     public PrivacyAccountManager(Context context, IAccountManager service, Handler handler) {
         super(context, service, handler);
-        mContext = context;
-        mPrivSetManager = (PrivacySettingsManager) context.getSystemService("privacy");
+        this.context = context;
+        pSetMan = (PrivacySettingsManager) context.getSystemService("privacy");
     }
 
     /**
@@ -47,7 +47,7 @@ public final class PrivacyAccountManager extends AccountManager {
     
     @Override
     public Account[] getAccounts() {
-        PrivacySettings pSet = mPrivSetManager.getSettings(mContext.getPackageName(), Binder.getCallingUid());
+        PrivacySettings pSet = pSetMan.getSettings(context.getPackageName(), Binder.getCallingUid());
         String output_label;
         Account[] output;
         
@@ -59,13 +59,13 @@ public final class PrivacyAccountManager extends AccountManager {
             output = super.getAccounts(); 
         }
         
-        Log.d(TAG, "getAccounts - " + mContext.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output_label);        
+        Log.d(TAG, "getAccounts - " + context.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output_label);        
         return output;
     }
 
     @Override
     public Account[] getAccountsByType(String type) {
-        PrivacySettings pSet = mPrivSetManager.getSettings(mContext.getPackageName(), Binder.getCallingUid());
+        PrivacySettings pSet = pSetMan.getSettings(context.getPackageName(), Binder.getCallingUid());
         String output_label;
         Account[] output;
         
@@ -77,14 +77,14 @@ public final class PrivacyAccountManager extends AccountManager {
             output = super.getAccountsByType(type);
         }
         
-        Log.d(TAG, "getAccountsByType - " + mContext.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output_label);        
+        Log.d(TAG, "getAccountsByType - " + context.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output_label);        
         return output;
     }
     
     @Override
     public AccountManagerFuture<Boolean> hasFeatures(Account account, String[] features,
             AccountManagerCallback<Boolean> callback, Handler handler) {
-        PrivacySettings pSet = mPrivSetManager.getSettings(mContext.getPackageName(), Binder.getCallingUid());
+        PrivacySettings pSet = pSetMan.getSettings(context.getPackageName(), Binder.getCallingUid());
         String output_label;
         AccountManagerFuture<Boolean> output;
         
@@ -96,14 +96,14 @@ public final class PrivacyAccountManager extends AccountManager {
             output = super.hasFeatures(account, features, callback, handler);
         }
         
-        Log.d(TAG, "hasFeatures - " + mContext.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output_label);        
+        Log.d(TAG, "hasFeatures - " + context.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output_label);        
         return output;
     }
 
     @Override
     public AccountManagerFuture<Account[]> getAccountsByTypeAndFeatures(String type, String[] features,
             AccountManagerCallback<Account[]> callback, Handler handler) {
-        PrivacySettings pSet = mPrivSetManager.getSettings(mContext.getPackageName(), Binder.getCallingUid());
+        PrivacySettings pSet = pSetMan.getSettings(context.getPackageName(), Binder.getCallingUid());
         String output_label;
         AccountManagerFuture<Account[]> output;
         
@@ -115,7 +115,7 @@ public final class PrivacyAccountManager extends AccountManager {
             output = super.getAccountsByTypeAndFeatures(type, features, callback, handler);
         }
         
-        Log.d(TAG, "getAccountsByTypeAndFeatures - " + mContext.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output_label);           
+        Log.d(TAG, "getAccountsByTypeAndFeatures - " + context.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output_label);           
         return output;
     }
     
@@ -126,7 +126,7 @@ public final class PrivacyAccountManager extends AccountManager {
     @Override
     public String blockingGetAuthToken(Account account, String authTokenType, boolean notifyAuthFailure)
             throws OperationCanceledException, IOException, AuthenticatorException {
-        PrivacySettings pSet = mPrivSetManager.getSettings(mContext.getPackageName(), Binder.getCallingUid());
+        PrivacySettings pSet = pSetMan.getSettings(context.getPackageName(), Binder.getCallingUid());
         String output;
         
         if (pSet != null && pSet.getAccountsAuthTokensSetting() != PrivacySettings.REAL) {
@@ -135,7 +135,7 @@ public final class PrivacyAccountManager extends AccountManager {
             output = super.blockingGetAuthToken(account, authTokenType, notifyAuthFailure);
         }
         
-        Log.d(TAG, "blockingGetAuthToken - " + mContext.getPackageName() + " (" + Binder.getCallingUid() + ") output: " 
+        Log.d(TAG, "blockingGetAuthToken - " + context.getPackageName() + " (" + Binder.getCallingUid() + ") output: " 
                 + (output == null ? "[null]" : output));
         return output;
     }
@@ -143,7 +143,7 @@ public final class PrivacyAccountManager extends AccountManager {
     @Override
     public AccountManagerFuture<Bundle> getAuthToken(Account account, String authTokenType, boolean notifyAuthFailure,
             AccountManagerCallback<Bundle> callback, Handler handler) {
-        PrivacySettings pSet = mPrivSetManager.getSettings(mContext.getPackageName(), Binder.getCallingUid());
+        PrivacySettings pSet = pSetMan.getSettings(context.getPackageName(), Binder.getCallingUid());
         String output_label;
         AccountManagerFuture<Bundle> output;
         
@@ -155,14 +155,14 @@ public final class PrivacyAccountManager extends AccountManager {
             output = super.getAuthToken(account, authTokenType, notifyAuthFailure, callback, handler);
         }
         
-        Log.d(TAG, "getAuthToken - " + mContext.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output_label);           
+        Log.d(TAG, "getAuthToken - " + context.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output_label);           
         return output;
     }
 
     @Override
     public AccountManagerFuture<Bundle> getAuthToken(Account account, String authTokenType, Bundle options,
             Activity activity, AccountManagerCallback<Bundle> callback, Handler handler) {
-        PrivacySettings pSet = mPrivSetManager.getSettings(mContext.getPackageName(), Binder.getCallingUid());
+        PrivacySettings pSet = pSetMan.getSettings(context.getPackageName(), Binder.getCallingUid());
         String output_label;
         AccountManagerFuture<Bundle> output;
         
@@ -174,7 +174,7 @@ public final class PrivacyAccountManager extends AccountManager {
             output = super.getAuthToken(account, authTokenType, options, activity, callback, handler);
         }
         
-        Log.d(TAG, "getAuthToken - " + mContext.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output_label);           
+        Log.d(TAG, "getAuthToken - " + context.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output_label);           
         return output;
     }
 
@@ -186,7 +186,7 @@ public final class PrivacyAccountManager extends AccountManager {
     public AccountManagerFuture<Bundle> getAuthTokenByFeatures(String accountType, String authTokenType,
             String[] features, Activity activity, Bundle addAccountOptions, Bundle getAuthTokenOptions,
             AccountManagerCallback<Bundle> callback, Handler handler) {
-        PrivacySettings pSet = mPrivSetManager.getSettings(mContext.getPackageName(), Binder.getCallingUid());
+        PrivacySettings pSet = pSetMan.getSettings(context.getPackageName(), Binder.getCallingUid());
         String output_label;
         AccountManagerFuture<Bundle> output;
         
@@ -199,7 +199,7 @@ public final class PrivacyAccountManager extends AccountManager {
                     getAuthTokenOptions, callback, handler);
         }
         
-        Log.d(TAG, "getAuthTokenByFeatures - " + mContext.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output_label);           
+        Log.d(TAG, "getAuthTokenByFeatures - " + context.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output_label);           
         return output;
     }
     

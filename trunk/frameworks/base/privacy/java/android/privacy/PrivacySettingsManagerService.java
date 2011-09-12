@@ -1,4 +1,3 @@
-
 package android.privacy;
 
 import android.content.Context;
@@ -16,7 +15,7 @@ public class PrivacySettingsManagerService extends IPrivacySettingsManager.Stub 
 
     private PrivacyPersistenceAdapter DBAdapter;
 
-    private Context mContext;
+    private Context context;
     
     private static final String WRITE_PRIVACY_SETTINGS = "android.privacy.WRITE_PRIVACY_SETTINGS";    
     
@@ -27,8 +26,8 @@ public class PrivacySettingsManagerService extends IPrivacySettingsManager.Stub 
     public PrivacySettingsManagerService(Context context) {
         Log.d(TAG, "PrivacySettingsManagerService: initializing for package: " + context.getPackageName() + 
                 " UID:" + Binder.getCallingUid());
-        mContext = context;
-        DBAdapter = new PrivacyPersistenceAdapter(mContext);
+        this.context = context;
+        DBAdapter = new PrivacyPersistenceAdapter(context);
     }
 
     public PrivacySettings getSettings(String packageName, int uid) {
@@ -38,7 +37,7 @@ public class PrivacySettingsManagerService extends IPrivacySettingsManager.Stub 
 
     public boolean saveSettings(PrivacySettings settings) {
         Log.d(TAG, "saveSettings: checking if caller (UID: " + Binder.getCallingUid() + ") has sufficient permissions");
-        mContext.enforceCallingPermission(WRITE_PRIVACY_SETTINGS, "Requires WRITE_PRIVACY_SETTINGS");
+        context.enforceCallingPermission(WRITE_PRIVACY_SETTINGS, "Requires WRITE_PRIVACY_SETTINGS");
         Log.d(TAG, "saveSettings: " + settings);
         return DBAdapter.saveSettings(settings);
     }

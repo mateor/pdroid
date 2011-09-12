@@ -76,7 +76,6 @@ public final class PrivacyActivityManagerService {
                 tmpOutReceivers--;
             } else { // free memory after all receivers have been served
                 tmpOut = null;
-                tmpOutHash = 0;
             }
             
             Log.d(TAG, "broadcasting intent " + action + " - " + packageName + " (" + uid + ") output: " + output);
@@ -108,7 +107,6 @@ public final class PrivacyActivityManagerService {
                 tmpInReceivers--;
             } else { // free memory after all receivers have been served
                 tmpIn = null;
-                tmpInHash = 0;
             }
             
             Log.d(TAG, "broadcasting intent " + action + " - " + packageName + " (" + uid + ") output: " + output);
@@ -161,7 +159,6 @@ public final class PrivacyActivityManagerService {
             } else { // free memory after all receivers have been served
                 Log.d(TAG, "removing intent with hash: " + tmpSmsHash);
                 tmpSms = null;
-                tmpSmsHash = 0;
             }            
             
             Log.d(TAG, "broadcasting intent " + action + " - " + packageName + " (" + uid + ") output: " + output);
@@ -210,7 +207,6 @@ public final class PrivacyActivityManagerService {
             } else { // free memory after all receivers have been served
                 Log.d(TAG, "removing intent with hash: " + tmpMmsHash);
                 tmpMms = null;
-                tmpMmsHash = 0;
             }
             
             Log.d(TAG, "broadcasting intent " + action + " - " + packageName + " (" + uid + ") output: " + output);

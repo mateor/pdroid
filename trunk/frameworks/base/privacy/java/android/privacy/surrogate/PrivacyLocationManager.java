@@ -25,23 +25,24 @@ public final class PrivacyLocationManager extends LocationManager {
 
     private static final String TAG = "PrivacyLocationManager";
     
-    private Context mContext;
+    private Context context;
     
-    private PrivacySettingsManager mPrivSetManager;
+    private PrivacySettingsManager pSetMan;
     
     private Object lock = new Object();
     
     public PrivacyLocationManager(ILocationManager service, Context context) {
         super(service);
-        this.mContext = context;
-        mPrivSetManager = (PrivacySettingsManager) mContext.getSystemService("privacy");
+        this.context = context;
+        pSetMan = (PrivacySettingsManager) context.getSystemService("privacy");
     }
 
     @Override
     public boolean addNmeaListener(NmeaListener listener) {
-        PrivacySettings pSet = mPrivSetManager.getSettings(mContext.getPackageName(), Binder.getCallingUid());
+        // TODO: implement custom location updater
+        PrivacySettings pSet = pSetMan.getSettings(context.getPackageName(), Binder.getCallingUid());
         if (pSet.getLocationGpsSetting() != PrivacySettings.REAL) return false;
-        Log.d(TAG, "addNmeaListener - " + mContext.getPackageName() + " (" + Binder.getCallingUid() + ") output: [real value]");
+        Log.d(TAG, "addNmeaListener - " + context.getPackageName() + " (" + Binder.getCallingUid() + ") output: [real value]");
         return super.addNmeaListener(listener);
     }
 
@@ -49,7 +50,7 @@ public final class PrivacyLocationManager extends LocationManager {
     public Location getLastKnownLocation(String provider) {
         if (provider == null) return super.getLastKnownLocation(provider);
         
-        PrivacySettings pSet = mPrivSetManager.getSettings(mContext.getPackageName(), Binder.getCallingUid());
+        PrivacySettings pSet = pSetMan.getSettings(context.getPackageName(), Binder.getCallingUid());
         Location output = null;
         
         if (pSet != null) {
@@ -91,7 +92,7 @@ public final class PrivacyLocationManager extends LocationManager {
             output = super.getLastKnownLocation(provider);
         }
         
-        Log.d(TAG, "getLastKnownLocation - " + mContext.getPackageName() + " (" + Binder.getCallingUid() + 
+        Log.d(TAG, "getLastKnownLocation - " + context.getPackageName() + " (" + Binder.getCallingUid() + 
                 ") output: " + output);
         return output;
     }
@@ -100,7 +101,7 @@ public final class PrivacyLocationManager extends LocationManager {
     public LocationProvider getProvider(String name) {
         if (name == null) return super.getProvider(name);
         
-        PrivacySettings pSet = mPrivSetManager.getSettings(mContext.getPackageName(), Binder.getCallingUid());
+        PrivacySettings pSet = pSetMan.getSettings(context.getPackageName(), Binder.getCallingUid());
         LocationProvider output = null;
         
         if (pSet != null) {
@@ -134,7 +135,7 @@ public final class PrivacyLocationManager extends LocationManager {
             output = super.getProvider(name);
         }
             
-        Log.d(TAG, "getProvider - " + mContext.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + 
+        Log.d(TAG, "getProvider - " + context.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + 
                 (output != null ? "[real value]" : "[null]"));
         return output;
     }
@@ -143,7 +144,7 @@ public final class PrivacyLocationManager extends LocationManager {
     public boolean isProviderEnabled(String provider) {
         if (provider == null) return super.isProviderEnabled(provider);
         
-        PrivacySettings pSet = mPrivSetManager.getSettings(mContext.getPackageName(), Binder.getCallingUid());
+        PrivacySettings pSet = pSetMan.getSettings(context.getPackageName(), Binder.getCallingUid());
         boolean output = false;
         
         if (pSet != null) {
@@ -183,7 +184,7 @@ public final class PrivacyLocationManager extends LocationManager {
             output = super.isProviderEnabled(provider);
         }
         
-        Log.d(TAG, "isProviderEnabled - " + mContext.getPackageName() + " (" + Binder.getCallingUid() + ") provider: " 
+        Log.d(TAG, "isProviderEnabled - " + context.getPackageName() + " (" + Binder.getCallingUid() + ") provider: " 
                 + provider + "output: " + output);
         return output;
     }
@@ -280,9 +281,12 @@ public final class PrivacyLocationManager extends LocationManager {
         super.requestSingleUpdate(provider, intent);
     }
     
+    /**
+     * Monitoring purposes only
+     */
     @Override
     public boolean sendExtraCommand(String provider, String command, Bundle extras) {
-        Log.d(TAG, "sendExtraCommand - " + mContext.getPackageName() + " (" + Binder.getCallingUid() + ")");
+        Log.d(TAG, "sendExtraCommand - " + context.getPackageName() + " (" + Binder.getCallingUid() + ")");
         return super.sendExtraCommand(provider, command, extras);
     }
 
@@ -294,7 +298,7 @@ public final class PrivacyLocationManager extends LocationManager {
     private boolean requestLocationUpdates(String provider, LocationListener listener, PendingIntent intent) {
         synchronized (lock) { // custom listener should only return a value after this method has returned
 
-            PrivacySettings pSet = mPrivSetManager.getSettings(mContext.getPackageName(), Binder.getCallingUid());
+            PrivacySettings pSet = pSetMan.getSettings(context.getPackageName(), Binder.getCallingUid());
             boolean output = false;
             
             if (pSet != null) {
@@ -346,12 +350,21 @@ public final class PrivacyLocationManager extends LocationManager {
                 }
             }
             
-            Log.d(TAG, "requestLocationUpdates - " + mContext.getPackageName() + " (" + Binder.getCallingUid() + 
+            Log.d(TAG, "requestLocationUpdates - " + context.getPackageName() + " (" + Binder.getCallingUid() + 
                     ") output: " + (output == true ? "[custom location]" : "[real value]"));
             return output;
         }
     }
     
+    /**
+     * Helper method for categorizing the different requestLocationUpdates calls by
+     * provider accuracy and handing them off to 
+     * {@link android.privacy.surrogate.PrivacyLocationManager#requestLocationUpdates(String, LocationListener, PendingIntent)}
+     * @param criteria
+     * @param listener
+     * @param intent
+     * @return see {@link android.privacy.surrogate.PrivacyLocationManager#requestLocationUpdates(String, LocationListener, PendingIntent)}
+     */
     private boolean requestLocationUpdates(Criteria criteria, LocationListener listener, PendingIntent intent) {
         if (criteria == null) return false;
             // treat providers with high accuracy as GPS providers

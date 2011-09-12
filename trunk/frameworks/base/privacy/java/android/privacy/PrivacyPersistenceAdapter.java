@@ -1,4 +1,3 @@
-
 package android.privacy;
 
 import android.content.ContentValues;
