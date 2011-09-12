@@ -55,6 +55,21 @@ public class PrivacySettingsManager {
         }
     }
     
+    public boolean deleteSettings(String packageName, int uid) {
+        try {
+            Log.d(TAG, "deleteSettings - "  + packageName + " UID: " + uid);
+            if (service != null) {
+                return service.deleteSettings(packageName, uid);
+            } else {
+                Log.e(TAG, "deleteSettings - PrivacySettingsManagerService is null");
+                return false;
+            }
+        } catch (RemoteException e) {
+            Log.e(TAG, "RemoteException in deleteSettings: ", e);
+            return false;
+        }
+    }
+    
     /**
      * Checks whether the PrivacySettingsManagerService is available. For some reason,
      * occasionally it appears to be null. In this case it should be initialized again.

@@ -267,16 +267,16 @@ public class PrivacyPersistenceAdapter {
             }
             
             // save settings to plain text file (for access from core libraries)
-            File settingsDir = new File("/data/system/privacy/" + packageName + "/" + uid + "/");
+            File settingsUidDir = new File("/data/system/privacy/" + packageName + "/" + uid + "/");
             File settingsPackageDir = new File("/data/system/privacy/" + packageName + "/");
             File systemLogsSettingFile = new File("/data/system/privacy/" + packageName + "/" + 
                     uid + "/systemLogsSetting");
             try {
                 // create all parent directories on the file path
-                settingsDir.mkdirs();
+                settingsUidDir.mkdirs();
                 // make the directory readable (requires it to be executable as well)
-                settingsDir.setReadable(true, false);
-                settingsDir.setExecutable(true, false);
+                settingsUidDir.setReadable(true, false);
+                settingsUidDir.setExecutable(true, false);
                 // make the parent directory readable (requires it to be executable as well)
                 settingsPackageDir.setReadable(true, false);
                 settingsPackageDir.setExecutable(true, false);
@@ -304,6 +304,47 @@ public class PrivacyPersistenceAdapter {
             if (db != null) db.close();
         }
 
+        return result;
+    }
+    
+    /**
+     * Deletes a settings entry from the DB
+     * @return true if settings were deleted successfully, false otherwise
+     */
+    public synchronized boolean deleteSettings(String packageName, int uid) {
+        boolean result = true;
+        
+        SQLiteDatabase db = getWritableDatabase();
+        db.beginTransaction(); // make sure this ends up in a consistent state (DB and plain text files)
+        try {
+            Log.d(TAG, "deleteSettings - deleting database entry for " + packageName + " (" + uid + ")");
+            int output = 
+                db.delete(DATABASE_TABLE, "packageName=? AND uid=?", new String[] { packageName, uid + "" });
+            if (output == 0) {
+                Log.e(TAG, "deleteSettings - database entry for " + packageName + " (" + uid + ") not found");
+                return false;
+            }
+            
+            // delete settings from plain text file (for access from core libraries)
+            File settingsUidDir = new File("/data/system/privacy/" + packageName + "/" + uid + "/");
+            File settingsPackageDir = new File("/data/system/privacy/" + packageName + "/");
+            File systemLogsSettingFile = new File("/data/system/privacy/" + packageName + "/" + 
+                    uid + "/systemLogsSetting");
+            // delete the setting files
+            systemLogsSettingFile.delete();
+            // delete the parent directories
+            settingsUidDir.delete();
+            settingsPackageDir.delete();
+            // mark DB transaction successful (commit the changes)
+            db.setTransactionSuccessful();
+        } catch (Exception e) {
+            result = false;
+            Log.e(TAG, "deleteSettings - could not delete settings", e);
+        } finally {
+            db.endTransaction();
+            if (db != null) db.close();
+        }
+        
         return result;
     }
     
