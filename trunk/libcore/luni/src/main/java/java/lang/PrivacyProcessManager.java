@@ -1,11 +1,14 @@
 package java.lang;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 
 /**
  * Provides privacy handling for {@link java.lang.ProcessManager}
@@ -20,7 +23,7 @@ public class PrivacyProcessManager {
      *          externalStorageSetting)
      * @return boolean true if permission is granted or false otherwise
      */
-    public static boolean hasPrivacyPermission(String setting) {
+    public static boolean hasPrivacyPermission(String setting, int pid) {
         String packageName = null;
         String uid = null;
         boolean output = true;
@@ -32,12 +35,18 @@ public class PrivacyProcessManager {
             e.printStackTrace();
         }
         try {
+            // get setting value
             PrivacyFileReader freader = new PrivacyFileReader("/data/system/privacy/" + 
                     packageName + "/" + uid + "/" + setting);
             String line = freader.readLine().trim();
             int systemLogsSetting = Integer.parseInt(line);
-            freader.close();            
-            if (systemLogsSetting == 1) {
+            freader.close();
+            // get the command line of starting process
+            freader = new PrivacyFileReader("/proc/" + pid + "/cmdline");
+            String proc = freader.readLine().trim();
+            freader.close();
+            // check permission
+            if (systemLogsSetting == 1 && proc.length() > 5 && proc.substring(0, 6).equals("logcat")) {
                 output = false;
             }
         } catch (FileNotFoundException e) {
@@ -46,6 +55,7 @@ public class PrivacyProcessManager {
             System.err.println("PrivacyProcessManager: could not read privacy settings: " + setting);
             e.printStackTrace();
         }
+        
         return output;
     }
     

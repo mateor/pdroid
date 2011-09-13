@@ -266,7 +266,7 @@ final class ProcessManager {
 
             this.errorStream = new ProcessInputStream(err);
             // BEGIN privacy-modified
-            if (PrivacyProcessManager.hasPrivacyPermission("systemLogsSetting"))
+            if (PrivacyProcessManager.hasPrivacyPermission("systemLogsSetting", id))
                 this.inputStream = new ProcessInputStream(in);
             else
                 this.inputStream = new PrivacyInputStream();
