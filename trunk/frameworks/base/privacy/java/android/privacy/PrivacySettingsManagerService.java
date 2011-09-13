@@ -43,7 +43,7 @@ public class PrivacySettingsManagerService extends IPrivacySettingsManager.Stub 
     }
     
     public boolean deleteSettings(String packageName, int uid) {
-        Log.d(TAG, "deleteSettings: " + packageName + " UID: " + uid + " " +
+        Log.d(TAG, "deleteSettings - " + packageName + " UID: " + uid + " " +
         		"checking if caller (UID: " + Binder.getCallingUid() + ") has sufficient permissions");
         context.enforceCallingPermission(WRITE_PRIVACY_SETTINGS, "Requires WRITE_PRIVACY_SETTINGS");
         return DBAdapter.deleteSettings(packageName, uid);

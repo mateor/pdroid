@@ -80,8 +80,10 @@ public final class PrivacyActivityManagerService {
             
             Log.d(TAG, "broadcasting intent " + action + " - " + packageName + " (" + uid + ") output: " + output);
         // incoming call
-        } else if (action.equals(TelephonyManager.ACTION_PHONE_STATE_CHANGED) && 
-                intent.getStringExtra(TelephonyManager.EXTRA_STATE).equals(TelephonyManager.EXTRA_STATE_RINGING)) {
+        } else if (action.equals(TelephonyManager.ACTION_PHONE_STATE_CHANGED)
+                // the EXTRA_INCOMING_NUMBER is NOT only present when state is EXTRA_STATE_RINGING
+                // Android documentation is WRONG; the EXTRA_INCOMING_NUMBER will also be there when hanging up (IDLE?)
+                /* && intent.getStringExtra(TelephonyManager.EXTRA_STATE).equals(TelephonyManager.EXTRA_STATE_RINGING)*/) {
             pSet = pSetMan.getSettings(packageName, uid);
             output = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER);
             

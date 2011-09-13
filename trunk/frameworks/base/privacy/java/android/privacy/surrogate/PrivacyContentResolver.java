@@ -10,6 +10,7 @@ import android.provider.Browser;
 import android.provider.Calendar;
 import android.provider.CallLog;
 import android.provider.ContactsContract;
+import android.provider.Contacts.People;
 import android.provider.Telephony.Mms;
 import android.provider.Telephony.MmsSms;
 import android.provider.Telephony.Sms;

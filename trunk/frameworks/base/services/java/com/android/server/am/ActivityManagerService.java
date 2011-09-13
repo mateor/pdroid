@@ -11057,7 +11057,7 @@ public final class ActivityManagerService extends ActivityManagerNative
 
             Object nextReceiver = r.receivers.get(recIdx);
             // BEGIN privacy-added
-            enforcePrivacyPermission(nextReceiver, r, r.receivers.size());
+            enforcePrivacyPermission(nextReceiver, r);
             // END privacy-added
             if (nextReceiver instanceof BroadcastFilter) {
                 // Simple case: this is a registered receiver who gets
@@ -11187,7 +11187,7 @@ public final class ActivityManagerService extends ActivityManagerNative
         }
     }
     // BEGIN privacy-added
-    private void enforcePrivacyPermission(Object nextReceiver, BroadcastRecord r, int receivers) {
+    private void enforcePrivacyPermission(Object nextReceiver, BroadcastRecord r) {
         if (r != null && r.intent != null && r.intent.getAction() != null) {
             
             String packageName = null;
@@ -11207,7 +11207,7 @@ public final class ActivityManagerService extends ActivityManagerNative
             }
             
             if (packageName != null && uid != -1) {
-                PrivacyActivityManagerService.enforcePrivacyPermission(packageName, uid, r.intent, mContext, receivers);
+                PrivacyActivityManagerService.enforcePrivacyPermission(packageName, uid, r.intent, mContext, r.receivers.size());
             }
         }
     }
