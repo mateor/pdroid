@@ -4,11 +4,13 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 
+/**
+ * Provides privacy handling for {@link java.lang.ProcessManager}
+ * @author Anonymous
+ */
 public class PrivacyProcessManager {
     
     /**
@@ -79,23 +81,6 @@ public class PrivacyProcessManager {
         }
         if (uid != null) return uid;
         else throw new Exception();
-    }
-    
-    /**
-     * Reads the system logs setting from a plain text file
-     * @param packageName
-     * @param uid
-     * @return int as defined in PrivacySettings
-     * @throws FileNotFoundException
-     * @throws IOException
-     */
-    private static int getSystemLogsSetting(String packageName, String uid) throws 
-            FileNotFoundException, IOException {
-        PrivacyFileReader freader = new PrivacyFileReader("/data/system/privacy/" + 
-                packageName + "/" + uid + "/systemLogsSetting");
-        int setting = Integer.parseInt(freader.readLine().trim());
-        freader.close();
-        return setting;
     }
     
     public static class PrivacyFileReader {

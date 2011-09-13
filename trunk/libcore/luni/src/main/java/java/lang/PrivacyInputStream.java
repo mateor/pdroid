@@ -3,6 +3,10 @@ package java.lang;
 import java.io.IOException;
 import java.io.InputStream;
 
+/**
+ * Simulates an empty InputStream
+ * @author Anonymous
+ */
 public class PrivacyInputStream extends InputStream {
 
     public PrivacyInputStream() {
