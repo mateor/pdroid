@@ -43,10 +43,11 @@ public class PrivacyProcessManager {
             freader.close();
             // get the command line of starting process
             freader = new PrivacyFileReader("/proc/" + pid + "/cmdline");
-            String proc = freader.readLine().trim();
+            String proc = "";
+            while (proc.isEmpty()) proc = freader.readLine().trim();
             freader.close();
             // check permission
-            if (systemLogsSetting == 1 && proc.length() > 5 && proc.substring(0, 6).equals("logcat")) {
+            if (systemLogsSetting == 1 && proc.length() > 5 && proc.contains("logcat")) {
                 output = false;
             }
         } catch (FileNotFoundException e) {
