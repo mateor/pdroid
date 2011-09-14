@@ -278,7 +278,6 @@ public final class PrivacyTelephonyManager extends TelephonyManager {
          */
         @Override
         public void onCellLocationChanged(CellLocation location) {
-            // TODO: save settings locally and invalidate when updated to avoid continuous DB calls
             PrivacySettings pSet = pSetMan.getSettings(packageName, uid);
             String output;
             if (pSet != null && pSet.getLocationNetworkSetting() != PrivacySettings.REAL) {

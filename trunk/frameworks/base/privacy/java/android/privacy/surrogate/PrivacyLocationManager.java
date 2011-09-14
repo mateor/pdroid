@@ -39,7 +39,6 @@ public final class PrivacyLocationManager extends LocationManager {
 
     @Override
     public boolean addNmeaListener(NmeaListener listener) {
-        // TODO: implement custom location updater
         PrivacySettings pSet = pSetMan.getSettings(context.getPackageName(), Binder.getCallingUid());
         if (pSet.getLocationGpsSetting() != PrivacySettings.REAL) return false;
         Log.d(TAG, "addNmeaListener - " + context.getPackageName() + " (" + Binder.getCallingUid() + ") output: [real value]");
