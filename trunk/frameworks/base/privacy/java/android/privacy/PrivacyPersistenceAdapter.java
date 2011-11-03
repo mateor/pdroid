@@ -21,6 +21,8 @@ public class PrivacyPersistenceAdapter {
 
     private static final String TAG = "PrivacyPersistenceAdapter";
     
+    private static final int RETRY_QUERY_COUNT = 5;
+    
     /**
      * Number of threads currently reading the database
      */
@@ -96,14 +98,7 @@ public class PrivacyPersistenceAdapter {
         readingThreads = 0;
     }
 
-    public PrivacySettings getSettings(String packageName, int uid) {
-        Log.d(TAG, "getSettings - settings request for package: " + packageName + " UID: " + uid);
-        
-        // indicate that the DB is being read to prevent closing by other threads
-        synchronized(readingThreads) {
-            readingThreads++;
-        }
-        
+    public PrivacySettings getSettings(String packageName, int uid) {        
         PrivacySettings s = null;
         
         if (packageName == null) {
@@ -111,20 +106,25 @@ public class PrivacyPersistenceAdapter {
             return s;
         }
         
+        // indicate that the DB is being read to prevent closing by other threads
+        readingThreads++;
+        Log.d(TAG, "getSettings - settings request for package: " + packageName + " UID: " + uid + " readingThreads: " + readingThreads);
+        
         SQLiteDatabase db;
         try {
             db = getReadableDatabase();
         } catch (SQLiteException e) {
             Log.e(TAG, "getSettings - database could not be opened");
-            return null;
+            readingThreads--;
+            return s;
         }
-        
+            
         Cursor c = null;
 
         try {
             // try to get settings based on package name only first; some system applications
             // (e.g., HTC Settings) run with a different UID than reported by package manager
-            c = db.query(DATABASE_TABLE, DATABASE_FIELDS, "packageName=?", new String[] { packageName }, null, null, null);
+            c = query(db, DATABASE_TABLE, DATABASE_FIELDS, "packageName=?", new String[] { packageName }, null, null, null);
 
             if (c != null) {
                 if (c.getCount() > 1) {
@@ -133,7 +133,8 @@ public class PrivacyPersistenceAdapter {
                     Log.d(TAG, "getSettings - multiple settings entries found for package name: " + packageName
                             + "; trying with UID: " + uid);
                     
-                    c = db.query(DATABASE_TABLE, DATABASE_FIELDS, 
+                    c.close();
+                    c = query(db, DATABASE_TABLE, DATABASE_FIELDS, 
                             "packageName=? AND uid=?", new String[] { packageName, uid + "" }, null, null, null);
                 }
                 if (c.getCount() == 1 && c.moveToFirst()) {
@@ -146,7 +147,7 @@ public class PrivacyPersistenceAdapter {
                             (byte)c.getShort(31), (byte)c.getShort(32));
                     Log.d(TAG, "getSettings - found settings entry for package: " + packageName + " UID: " + uid);
                 } else if (c.getCount() > 1) {
-                    // multiple settings entries have same package name AND UID, this should NEVER happen
+                    // multiple settings entries have same package name AND UID; this should NEVER happen
                     Log.e(TAG, "getSettings - duplicate entries in the privacy.db");
                     // if it does happen, null will be returned, since we cannot be sure what setting to use
                 }
@@ -154,13 +155,18 @@ public class PrivacyPersistenceAdapter {
                 Log.d(TAG, "getSettings - no settings found for package: " + packageName + " UID: " + uid);
             }
         } catch (Exception e) {
+            Log.e(TAG, "getSettings - failed to get settings for package: " + packageName + " UID: " + uid);
             e.printStackTrace();
         } finally {
             if (c != null) c.close();
             synchronized (readingThreads) {
                 readingThreads--;
+                Log.d(TAG, "getSettings - settings request for package (finished): " + packageName + " UID: " + uid + " readingThreads: " + readingThreads);                
                 // only close DB if no other threads are reading
-                if (readingThreads == 0 && db != null) db.close();
+                if (readingThreads == 0 && db != null && db.isOpen()) {
+                    db.close();
+                    db = null;
+                }
             }
         }
         
@@ -227,7 +233,6 @@ public class PrivacyPersistenceAdapter {
 //        values.put("externalStorageSetting", s.getExternalStorageSetting());
 //        values.put("cameraSetting", s.getCameraSetting());
 //        values.put("recordAudioSetting", s.getRecordAudioSetting());
-        
         
         SQLiteDatabase db = getWritableDatabase();
         db.beginTransaction(); // make sure this ends up in a consistent state (DB and plain text files)
@@ -301,7 +306,7 @@ public class PrivacyPersistenceAdapter {
         } finally {
             db.endTransaction();
             if (c != null) c.close();
-            if (db != null) db.close();
+            if (db != null && db.isOpen()) db.close();
         }
 
         return result;
@@ -342,10 +347,30 @@ public class PrivacyPersistenceAdapter {
             Log.e(TAG, "deleteSettings - could not delete settings", e);
         } finally {
             db.endTransaction();
-            if (db != null) db.close();
+            if (db != null && db.isOpen()) db.close();
         }
         
         return result;
+    }
+    
+    private Cursor query(SQLiteDatabase db, String table, String[] columns, String selection, 
+            String[] selectionArgs, String groupBy, String having, String orderBy) throws Exception {
+        Cursor c = null;
+        // make sure getting settings does not fail because of IllegalStateException (db already closed)
+        boolean success = false;
+        for (int i = 0; success == false && i < RETRY_QUERY_COUNT; i++) {
+            try {
+                if (c != null) c.close();
+                c = db.query(table, columns, selection, selectionArgs, groupBy, having, orderBy);
+                success = true;
+            } catch (IllegalStateException e) {
+                success = false;
+                if (db != null && db.isOpen()) db.close();
+                db = getReadableDatabase();
+            }
+        }
+        if (success == false) throw new Exception("query - failed to execute query on the DB");
+        return c;
     }
     
     private synchronized void createDatabase() {
@@ -356,25 +381,24 @@ public class PrivacyPersistenceAdapter {
         Log.d(TAG, "createDatabase - executing database create statement on privacy.db");
         db.execSQL(DATABASE_CREATE);
         Log.d(TAG, "createDatabase - closing connection to privacy.db");
-        db.close();
+        if (db != null && db.isOpen()) db.close();
     }
     
     private synchronized void createSettingsDir() {
         // create settings directory (for settings accessed from core libraries)
         File settingsDir = new File("/data/system/privacy/");
         settingsDir.mkdirs();
-        settingsDir.setReadable(true, false); // make it readable for everybody
-        // for some reason reading the files only works if it is executable
-        settingsDir.setExecutable(true, false);    
+        // make it readable for everybody
+        settingsDir.setReadable(true, false);
+        settingsDir.setExecutable(true, false);
     }
     
     private synchronized SQLiteDatabase getReadableDatabase() {
-        if (db != null && db.isOpen() && db.isReadOnly()) return db;
-
-        SQLiteDatabase db = SQLiteDatabase.openDatabase(DATABASE_NAME, null, SQLiteDatabase.OPEN_READONLY);
-        this.db = db;
-
-        return this.db;
+        if (db != null && db.isOpen()) return db;
+        
+        db = SQLiteDatabase.openDatabase(DATABASE_NAME, null, SQLiteDatabase.OPEN_READONLY);
+        
+        return db;
     }
 
     private synchronized SQLiteDatabase getWritableDatabase() {
@@ -383,9 +407,8 @@ public class PrivacyPersistenceAdapter {
         
         if (db != null && db.isOpen() && !db.isReadOnly()) return db;
         
-        SQLiteDatabase db = SQLiteDatabase.openDatabase(DATABASE_NAME, null, SQLiteDatabase.OPEN_READWRITE);
-        this.db = db;
+        db = SQLiteDatabase.openDatabase(DATABASE_NAME, null, SQLiteDatabase.OPEN_READWRITE);
 
-        return this.db;
+        return db;
     }
 }
