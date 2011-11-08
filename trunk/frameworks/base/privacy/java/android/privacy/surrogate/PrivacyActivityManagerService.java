@@ -78,7 +78,7 @@ public final class PrivacyActivityManagerService {
                 tmpOut = null;
             }
             
-            Log.d(TAG, "broadcasting intent " + action + " - " + packageName + " (" + uid + ") output: " + output);
+//            Log.d(TAG, "broadcasting intent " + action + " - " + packageName + " (" + uid + ") output: " + output);
         // incoming call
         } else if (action.equals(TelephonyManager.ACTION_PHONE_STATE_CHANGED)
                 // the EXTRA_INCOMING_NUMBER is NOT only present when state is EXTRA_STATE_RINGING
@@ -111,12 +111,12 @@ public final class PrivacyActivityManagerService {
                 tmpIn = null;
             }
             
-            Log.d(TAG, "broadcasting intent " + action + " - " + packageName + " (" + uid + ") output: " + output);
+//            Log.d(TAG, "broadcasting intent " + action + " - " + packageName + " (" + uid + ") output: " + output);
         // incoming SMS
         } else if (action.equals(Telephony.Sms.Intents.SMS_RECEIVED_ACTION)) {
             pSet = pSetMan.getSettings(packageName, uid);
             output = "[real]";
-            Log.d(TAG, "package: " + packageName + " uid: " + uid);
+//            Log.d(TAG, "package: " + packageName + " uid: " + uid);
             
             Object[] o = ((Object[])intent.getSerializableExtra("pdus"));
             byte[] b = o != null ? (byte[])o[0] : null;
@@ -125,11 +125,11 @@ public final class PrivacyActivityManagerService {
                 tmpSms = (Intent)intent.clone();
                 tmpSmsHash = hashCode(intent);
                 tmpSmsReceivers = receivers;
-                Log.d(TAG, "new intent; saving copy: receivers: " + receivers + " hash: " + tmpSmsHash + " " + 
-                        "pdu number: " + (o != null ? o.length : "null") + " " + 
-                        "1st pdu length: " + (b != null ? b.length : "null"));
+//                Log.d(TAG, "new intent; saving copy: receivers: " + receivers + " hash: " + tmpSmsHash + " " + 
+//                        "pdu number: " + (o != null ? o.length : "null") + " " + 
+//                        "1st pdu length: " + (b != null ? b.length : "null"));
             } else {
-                Log.d(TAG, "known intent; hash: " + hashCode(intent) + " remaining receivers: " + tmpSmsReceivers);
+//                Log.d(TAG, "known intent; hash: " + hashCode(intent) + " remaining receivers: " + tmpSmsReceivers);
             }
             
             try {
@@ -140,17 +140,17 @@ public final class PrivacyActivityManagerService {
                     emptypdusObj[0] = (Object) new byte[] {0,32,1,-127,-16,0,0,17,-112,1,48,34,34,-128,1,32};
                     intent.putExtra("pdus", emptypdusObj);
                     
-                    Log.d(TAG, "permission denied, replaced pdu; pdu number: " + 
-                            (o != null ? o.length : "null") + " " +
-                        "1st pdu length:" + (b != null ? b.length : "null"));
+//                    Log.d(TAG, "permission denied, replaced pdu; pdu number: " + 
+//                            (o != null ? o.length : "null") + " " +
+//                        "1st pdu length:" + (b != null ? b.length : "null"));
                 } else if (tmpSmsHash == hashCode(intent)) {
                     intent.putExtra("pdus", tmpSms.getSerializableExtra("pdus"));
                     
                     o = ((Object[])intent.getSerializableExtra("pdus"));
                     b = o != null ? (byte[])o[0] : null;
-                    Log.d(TAG, "permission granted, inserting saved pdus; pdu number: " + 
-                            (o != null ? o.length : "null") + " " +
-                            "1st pdu length:" + (b != null ? b.length : "null"));
+//                    Log.d(TAG, "permission granted, inserting saved pdus; pdu number: " + 
+//                            (o != null ? o.length : "null") + " " +
+//                            "1st pdu length:" + (b != null ? b.length : "null"));
                 }
             } catch (Exception e) {
                 Log.e(TAG, "failed to enforce intent broadcast permission", e);
@@ -159,11 +159,11 @@ public final class PrivacyActivityManagerService {
             if (tmpSmsReceivers > 1) {
                 tmpSmsReceivers--;
             } else { // free memory after all receivers have been served
-                Log.d(TAG, "removing intent with hash: " + tmpSmsHash);
+//                Log.d(TAG, "removing intent with hash: " + tmpSmsHash);
                 tmpSms = null;
             }            
             
-            Log.d(TAG, "broadcasting intent " + action + " - " + packageName + " (" + uid + ") output: " + output);
+//            Log.d(TAG, "broadcasting intent " + action + " - " + packageName + " (" + uid + ") output: " + output);
         // incoming MMS
         } else if (action.equals(Telephony.Sms.Intents.WAP_PUSH_RECEIVED_ACTION) ||
                 action.equals(Telephony.Sms.Intents.DATA_SMS_RECEIVED_ACTION)) {
@@ -177,11 +177,11 @@ public final class PrivacyActivityManagerService {
                 tmpMms = (Intent)intent.clone();
                 tmpMmsHash = hashCode(intent);
                 tmpMmsReceivers = receivers;
-                Log.d(TAG, "new intent; saving copy: receivers: " + receivers + " hash: " + tmpMmsHash + " " + 
-                        "pdu number: " + (o != null ? o.length : "null") + " " + 
-                        "1st pdu length: " + (b != null ? b.length : "null"));
+//                Log.d(TAG, "new intent; saving copy: receivers: " + receivers + " hash: " + tmpMmsHash + " " + 
+//                        "pdu number: " + (o != null ? o.length : "null") + " " + 
+//                        "1st pdu length: " + (b != null ? b.length : "null"));
             } else {
-                Log.d(TAG, "known intent; hash: " + hashCode(intent) + " remaining receivers: " + tmpMmsReceivers);
+//                Log.d(TAG, "known intent; hash: " + hashCode(intent) + " remaining receivers: " + tmpMmsReceivers);
             }
             
             try {
@@ -196,9 +196,9 @@ public final class PrivacyActivityManagerService {
                     
                     o = ((Object[])intent.getSerializableExtra("pdus"));
                     b = o != null ? (byte[])o[0] : null;
-                    Log.d(TAG, "permission granted, inserting saved pdus; pdu number: " + 
-                            (o != null ? o.length : "null") + " " +
-                            "1st pdu length:" + (b != null ? b.length : "null"));
+//                    Log.d(TAG, "permission granted, inserting saved pdus; pdu number: " + 
+//                            (o != null ? o.length : "null") + " " +
+//                            "1st pdu length:" + (b != null ? b.length : "null"));
                 }
             } catch (Exception e) {
                 Log.e(TAG, "failed to enforce intent broadcast permission", e);
@@ -207,11 +207,11 @@ public final class PrivacyActivityManagerService {
             if (tmpMmsReceivers > 1) {
                 tmpMmsReceivers--;
             } else { // free memory after all receivers have been served
-                Log.d(TAG, "removing intent with hash: " + tmpMmsHash);
+//                Log.d(TAG, "removing intent with hash: " + tmpMmsHash);
                 tmpMms = null;
             }
             
-            Log.d(TAG, "broadcasting intent " + action + " - " + packageName + " (" + uid + ") output: " + output);
+//            Log.d(TAG, "broadcasting intent " + action + " - " + packageName + " (" + uid + ") output: " + output);
         }
     }
     

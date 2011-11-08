@@ -88,8 +88,8 @@ public class PrivacyPersistenceAdapter {
     public PrivacyPersistenceAdapter(Context context) {
         // check write permission for /data/system/
         boolean canWrite = new File("/data/system/").canWrite();
-        Log.d(TAG, "Constructing " + TAG + " for package: " +  context.getPackageName() + 
-                " UID: " + Binder.getCallingUid() + "; Write permission for /data/system/: " + canWrite);
+//        Log.d(TAG, "Constructing " + TAG + " for package: " +  context.getPackageName() + 
+//                " UID: " + Binder.getCallingUid() + "; Write permission for /data/system/: " + canWrite);
         // create the database and settings directory if we have write permission and they do not exist
         if (canWrite) {
             if (!new File(DATABASE_NAME).exists()) createDatabase();
@@ -108,7 +108,7 @@ public class PrivacyPersistenceAdapter {
         
         // indicate that the DB is being read to prevent closing by other threads
         readingThreads++;
-        Log.d(TAG, "getSettings - settings request for package: " + packageName + " UID: " + uid + " readingThreads: " + readingThreads);
+//        Log.d(TAG, "getSettings - settings request for package: " + packageName + " UID: " + uid + " readingThreads: " + readingThreads);
         
         SQLiteDatabase db;
         try {
@@ -130,8 +130,8 @@ public class PrivacyPersistenceAdapter {
                 if (c.getCount() > 1) {
                     // if we get multiple entries, try using UID as well; not guaranteed to find existing
                     // settings for system applications (see above comment) but this is rather rare
-                    Log.d(TAG, "getSettings - multiple settings entries found for package name: " + packageName
-                            + "; trying with UID: " + uid);
+//                    Log.d(TAG, "getSettings - multiple settings entries found for package name: " + packageName
+//                            + "; trying with UID: " + uid);
                     
                     c.close();
                     c = query(db, DATABASE_TABLE, DATABASE_FIELDS, 
@@ -145,14 +145,14 @@ public class PrivacyPersistenceAdapter {
                             (byte)c.getShort(21), (byte)c.getShort(22), (byte)c.getShort(23), (byte)c.getShort(24), (byte)c.getShort(25), 
                             (byte)c.getShort(26), (byte)c.getShort(27), (byte)c.getShort(28), (byte)c.getShort(29), (byte)c.getShort(30), 
                             (byte)c.getShort(31), (byte)c.getShort(32));
-                    Log.d(TAG, "getSettings - found settings entry for package: " + packageName + " UID: " + uid);
+//                    Log.d(TAG, "getSettings - found settings entry for package: " + packageName + " UID: " + uid);
                 } else if (c.getCount() > 1) {
                     // multiple settings entries have same package name AND UID; this should NEVER happen
                     Log.e(TAG, "getSettings - duplicate entries in the privacy.db");
                     // if it does happen, null will be returned, since we cannot be sure what setting to use
                 }
             } else {
-                Log.d(TAG, "getSettings - no settings found for package: " + packageName + " UID: " + uid);
+//                Log.d(TAG, "getSettings - no settings found for package: " + packageName + " UID: " + uid);
             }
         } catch (Exception e) {
             Log.e(TAG, "getSettings - failed to get settings for package: " + packageName + " UID: " + uid);
@@ -161,7 +161,6 @@ public class PrivacyPersistenceAdapter {
             if (c != null) c.close();
             synchronized (readingThreads) {
                 readingThreads--;
-                Log.d(TAG, "getSettings - settings request for package (finished): " + packageName + " UID: " + uid + " readingThreads: " + readingThreads);                
                 // only close DB if no other threads are reading
                 if (readingThreads == 0 && db != null && db.isOpen()) {
                     db.close();
@@ -170,7 +169,7 @@ public class PrivacyPersistenceAdapter {
             }
         }
         
-        Log.d(TAG, "getSettings - returning settings: " + s);
+//        Log.d(TAG, "getSettings - returning settings: " + s);
         return s;
     }
     
@@ -185,7 +184,7 @@ public class PrivacyPersistenceAdapter {
         boolean result = true;
         String packageName = s.getPackageName();
         Integer uid = s.getUid();
-        Log.d(TAG, "saveSettings - settings save request : " + s);
+//        Log.d(TAG, "saveSettings - settings save request : " + s);
         
         if (packageName == null || packageName.isEmpty() || uid == null) {
             Log.e(TAG, "saveSettings - either package name, UID or both is missing");
@@ -239,26 +238,26 @@ public class PrivacyPersistenceAdapter {
         Cursor c = null;
         try {
             // save settings to the DB
-            Log.d(TAG, "saveSettings - checking if entry exists already");
+//            Log.d(TAG, "saveSettings - checking if entry exists already");
             if (s.get_id() != null) { // entry exists -> update
 
-                Log.d(TAG, "saveSettings - updating existing entry");
+//                Log.d(TAG, "saveSettings - updating existing entry");
                 db.update(DATABASE_TABLE, values, "_id=?", new String[] { s.get_id().toString() });
 
             } else { // new entry -> insert if no duplicates exist
 
-                Log.d(TAG, "saveSettings - new entry; verifying if duplicates exist");
+//                Log.d(TAG, "saveSettings - new entry; verifying if duplicates exist");
                 c = db.query(DATABASE_TABLE, new String[] { "_id" }, "packageName=? AND uid=?", 
                         new String[] { s.getPackageName(), s.getUid() + "" }, null, null, null);
                 
                 if (c != null) {
                     if (c.getCount() == 1) { // exactly one entry
                         // exists -> update
-                        Log.d(TAG, "saveSettings - updating existing entry");
+//                        Log.d(TAG, "saveSettings - updating existing entry");
                         db.update(DATABASE_TABLE, values, "packageName=? AND uid=?", 
                                 new String[] { s.getPackageName(), s.getUid() + "" });
                     } else if (c.getCount() == 0) { // no entries -> insert
-                        Log.d(TAG, "saveSettings - inserting new entry");
+//                        Log.d(TAG, "saveSettings - inserting new entry");
                         db.insert(DATABASE_TABLE, null, values);
                     } else { // something went totally wrong and there are multiple entries for same identifier
                         result = false;
@@ -322,7 +321,7 @@ public class PrivacyPersistenceAdapter {
         SQLiteDatabase db = getWritableDatabase();
         db.beginTransaction(); // make sure this ends up in a consistent state (DB and plain text files)
         try {
-            Log.d(TAG, "deleteSettings - deleting database entry for " + packageName + " (" + uid + ")");
+//            Log.d(TAG, "deleteSettings - deleting database entry for " + packageName + " (" + uid + ")");
             int output = 
                 db.delete(DATABASE_TABLE, "packageName=? AND uid=?", new String[] { packageName, uid + "" });
             if (output == 0) {
@@ -374,13 +373,13 @@ public class PrivacyPersistenceAdapter {
     }
     
     private synchronized void createDatabase() {
-        Log.d(TAG, "createDatabase - creating privacy.db in /data/system");
+//        Log.d(TAG, "createDatabase - creating privacy.db in /data/system");
         SQLiteDatabase db = 
             SQLiteDatabase.openDatabase(DATABASE_NAME, null, SQLiteDatabase.OPEN_READWRITE | 
                     SQLiteDatabase.CREATE_IF_NECESSARY);
-        Log.d(TAG, "createDatabase - executing database create statement on privacy.db");
+//        Log.d(TAG, "createDatabase - executing database create statement on privacy.db");
         db.execSQL(DATABASE_CREATE);
-        Log.d(TAG, "createDatabase - closing connection to privacy.db");
+//        Log.d(TAG, "createDatabase - closing connection to privacy.db");
         if (db != null && db.isOpen()) db.close();
     }
     

@@ -59,7 +59,7 @@ public final class PrivacyAccountManager extends AccountManager {
             output = super.getAccounts(); 
         }
         
-        Log.d(TAG, "getAccounts - " + context.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output_label);        
+//        Log.d(TAG, "getAccounts - " + context.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output_label);        
         return output;
     }
 
@@ -77,7 +77,7 @@ public final class PrivacyAccountManager extends AccountManager {
             output = super.getAccountsByType(type);
         }
         
-        Log.d(TAG, "getAccountsByType - " + context.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output_label);        
+//        Log.d(TAG, "getAccountsByType - " + context.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output_label);        
         return output;
     }
     
@@ -96,7 +96,7 @@ public final class PrivacyAccountManager extends AccountManager {
             output = super.hasFeatures(account, features, callback, handler);
         }
         
-        Log.d(TAG, "hasFeatures - " + context.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output_label);        
+//        Log.d(TAG, "hasFeatures - " + context.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output_label);        
         return output;
     }
 
@@ -115,7 +115,7 @@ public final class PrivacyAccountManager extends AccountManager {
             output = super.getAccountsByTypeAndFeatures(type, features, callback, handler);
         }
         
-        Log.d(TAG, "getAccountsByTypeAndFeatures - " + context.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output_label);           
+//        Log.d(TAG, "getAccountsByTypeAndFeatures - " + context.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output_label);           
         return output;
     }
     
@@ -135,8 +135,8 @@ public final class PrivacyAccountManager extends AccountManager {
             output = super.blockingGetAuthToken(account, authTokenType, notifyAuthFailure);
         }
         
-        Log.d(TAG, "blockingGetAuthToken - " + context.getPackageName() + " (" + Binder.getCallingUid() + ") output: " 
-                + (output == null ? "[null]" : output));
+//        Log.d(TAG, "blockingGetAuthToken - " + context.getPackageName() + " (" + Binder.getCallingUid() + ") output: " 
+//                + (output == null ? "[null]" : output));
         return output;
     }
 
@@ -155,7 +155,7 @@ public final class PrivacyAccountManager extends AccountManager {
             output = super.getAuthToken(account, authTokenType, notifyAuthFailure, callback, handler);
         }
         
-        Log.d(TAG, "getAuthToken - " + context.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output_label);           
+//        Log.d(TAG, "getAuthToken - " + context.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output_label);           
         return output;
     }
 
@@ -174,7 +174,7 @@ public final class PrivacyAccountManager extends AccountManager {
             output = super.getAuthToken(account, authTokenType, options, activity, callback, handler);
         }
         
-        Log.d(TAG, "getAuthToken - " + context.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output_label);           
+//        Log.d(TAG, "getAuthToken - " + context.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output_label);           
         return output;
     }
 
@@ -199,7 +199,7 @@ public final class PrivacyAccountManager extends AccountManager {
                     getAuthTokenOptions, callback, handler);
         }
         
-        Log.d(TAG, "getAuthTokenByFeatures - " + context.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output_label);           
+//        Log.d(TAG, "getAuthTokenByFeatures - " + context.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output_label);           
         return output;
     }
     

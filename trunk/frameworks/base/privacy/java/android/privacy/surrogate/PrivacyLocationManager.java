@@ -2,7 +2,6 @@ package android.privacy.surrogate;
 
 import android.app.PendingIntent;
 import android.content.Context;
-import android.content.Intent;
 import android.location.Criteria;
 import android.location.ILocationManager;
 import android.location.Location;
@@ -11,7 +10,6 @@ import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.location.GpsStatus.NmeaListener;
 import android.os.Binder;
-import android.os.Bundle;
 import android.os.Looper;
 import android.privacy.PrivacySettings;
 import android.privacy.PrivacySettingsManager;
@@ -24,6 +22,8 @@ import android.util.Log;
 public final class PrivacyLocationManager extends LocationManager {
 
     private static final String TAG = "PrivacyLocationManager";
+    
+    private static final int CUSTOM_LOCATION_UPDATE_COUNT = 5;
     
     private Context context;
     
@@ -39,9 +39,11 @@ public final class PrivacyLocationManager extends LocationManager {
 
     @Override
     public boolean addNmeaListener(NmeaListener listener) {
+        // only blocks if access is not allowed
+        // custom and random values not implemented due to Decimal Degrees->NMEA conversion complexity
         PrivacySettings pSet = pSetMan.getSettings(context.getPackageName(), Binder.getCallingUid());
         if (pSet.getLocationGpsSetting() != PrivacySettings.REAL) return false;
-        Log.d(TAG, "addNmeaListener - " + context.getPackageName() + " (" + Binder.getCallingUid() + ") output: [real value]");
+//        Log.d(TAG, "addNmeaListener - " + context.getPackageName() + " (" + Binder.getCallingUid() + ") output: [real value]");
         return super.addNmeaListener(listener);
     }
 
@@ -91,8 +93,8 @@ public final class PrivacyLocationManager extends LocationManager {
             output = super.getLastKnownLocation(provider);
         }
         
-        Log.d(TAG, "getLastKnownLocation - " + context.getPackageName() + " (" + Binder.getCallingUid() + 
-                ") output: " + output);
+//        Log.d(TAG, "getLastKnownLocation - " + context.getPackageName() + " (" + Binder.getCallingUid() + 
+//                ") output: " + output);
         return output;
     }
 
@@ -134,8 +136,8 @@ public final class PrivacyLocationManager extends LocationManager {
             output = super.getProvider(name);
         }
             
-        Log.d(TAG, "getProvider - " + context.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + 
-                (output != null ? "[real value]" : "[null]"));
+//        Log.d(TAG, "getProvider - " + context.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + 
+//                (output != null ? "[real value]" : "[null]"));
         return output;
     }
 
@@ -183,8 +185,8 @@ public final class PrivacyLocationManager extends LocationManager {
             output = super.isProviderEnabled(provider);
         }
         
-        Log.d(TAG, "isProviderEnabled - " + context.getPackageName() + " (" + Binder.getCallingUid() + ") provider: " 
-                + provider + "output: " + output);
+//        Log.d(TAG, "isProviderEnabled - " + context.getPackageName() + " (" + Binder.getCallingUid() + ") provider: " 
+//                + provider + "output: " + output);
         return output;
     }
 
@@ -283,11 +285,11 @@ public final class PrivacyLocationManager extends LocationManager {
     /**
      * Monitoring purposes only
      */
-    @Override
-    public boolean sendExtraCommand(String provider, String command, Bundle extras) {
-        Log.d(TAG, "sendExtraCommand - " + context.getPackageName() + " (" + Binder.getCallingUid() + ")");
-        return super.sendExtraCommand(provider, command, extras);
-    }
+//    @Override
+//    public boolean sendExtraCommand(String provider, String command, Bundle extras) {
+//        Log.d(TAG, "sendExtraCommand - " + context.getPackageName() + " (" + Binder.getCallingUid() + ")");
+//        return super.sendExtraCommand(provider, command, extras);
+//    }
 
     /**
      * Handles calls to requestLocationUpdates and requestSingleUpdate methods
@@ -306,6 +308,7 @@ public final class PrivacyLocationManager extends LocationManager {
                         case PrivacySettings.REAL:
                             break;
                         case PrivacySettings.EMPTY:
+                            if (intent != null) intent.cancel();
                             output = true;
                             break;
                         case PrivacySettings.CUSTOM:
@@ -325,6 +328,7 @@ public final class PrivacyLocationManager extends LocationManager {
                         case PrivacySettings.REAL:
                             break;
                         case PrivacySettings.EMPTY:
+                            if (intent != null) intent.cancel();
                             output = true;
                             break;
                         case PrivacySettings.CUSTOM:
@@ -349,8 +353,8 @@ public final class PrivacyLocationManager extends LocationManager {
                 }
             }
             
-            Log.d(TAG, "requestLocationUpdates - " + context.getPackageName() + " (" + Binder.getCallingUid() + 
-                    ") output: " + (output == true ? "[custom location]" : "[real value]"));
+//            Log.d(TAG, "requestLocationUpdates - " + context.getPackageName() + " (" + Binder.getCallingUid() + 
+//                    ") output: " + (output == true ? "[custom location]" : "[real value]"));
             return output;
         }
     }
@@ -405,13 +409,17 @@ public final class PrivacyLocationManager extends LocationManager {
                 Location location = new Location(provider);
                 location.setLatitude(latitude);
                 location.setLongitude(longitude);
-                
-                synchronized (lock) {
+                for (int i = 0; i < CUSTOM_LOCATION_UPDATE_COUNT; i++) {
                     if (listener != null) {
                         listener.onLocationChanged(location);
                     } else if (intent != null) {
-                        Intent i = new Intent();
-                        i.putExtra(LocationManager.KEY_LOCATION_CHANGED, location);
+                        // no custom or random location implemented due to complexity
+                        intent.cancel();
+                    }
+                    try {
+                        sleep((int)(Math.random() * 1000));
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
                 }
             }

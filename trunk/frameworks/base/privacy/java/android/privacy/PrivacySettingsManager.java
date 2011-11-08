@@ -20,14 +20,14 @@ public class PrivacySettingsManager {
      * @param context
      */
     public PrivacySettingsManager(Context context, IPrivacySettingsManager service) {
-        Log.d(TAG, "PrivacySettingsManager - initializing for package: " + context.getPackageName() + 
-                " UID:" + Binder.getCallingUid());
+//        Log.d(TAG, "PrivacySettingsManager - initializing for package: " + context.getPackageName() + 
+//                " UID:" + Binder.getCallingUid());
         this.service = service;
     }
 
     public PrivacySettings getSettings(String packageName, int uid) {
         try {
-            Log.d(TAG, "getSettings for package: " + packageName + " UID: " + uid);
+//            Log.d(TAG, "getSettings for package: " + packageName + " UID: " + uid);
             if (service != null) {
                 return service.getSettings(packageName, uid);
             } else {
@@ -42,7 +42,7 @@ public class PrivacySettingsManager {
 
     public boolean saveSettings(PrivacySettings settings) {
         try {
-            Log.d(TAG, "saveSettings - " + settings);
+//            Log.d(TAG, "saveSettings - " + settings);
             if (service != null) {            
                 return service.saveSettings(settings);
             } else {
@@ -57,7 +57,7 @@ public class PrivacySettingsManager {
     
     public boolean deleteSettings(String packageName, int uid) {
         try {
-            Log.d(TAG, "deleteSettings - "  + packageName + " UID: " + uid);
+//            Log.d(TAG, "deleteSettings - "  + packageName + " UID: " + uid);
             if (service != null) {
                 return service.deleteSettings(packageName, uid);
             } else {

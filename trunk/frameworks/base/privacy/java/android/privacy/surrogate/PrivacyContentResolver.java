@@ -96,7 +96,7 @@ public final class PrivacyContentResolver {
                     
                 }
             }
-            Log.d(TAG, "query - " + packageName + " (" + uid + ") auth: " + auth + " output: " + output_label);
+//            Log.d(TAG, "query - " + packageName + " (" + uid + ") auth: " + auth + " output: " + output_label);
             return output;
         }
         return realCursor;
