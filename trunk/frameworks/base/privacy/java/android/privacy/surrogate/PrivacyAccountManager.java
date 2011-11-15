@@ -25,9 +25,11 @@ import java.util.concurrent.TimeUnit;
  */
 public final class PrivacyAccountManager extends AccountManager {
     
-    private final String TAG = "PrivacyAccountManager";
+    private static final String TAG = "PrivacyAccountManager";
+    
     private Context context;
-    private PrivacySettingsManager pSetMan;    
+    
+    private PrivacySettingsManager pSetMan;
 
     public PrivacyAccountManager(Context context, IAccountManager service) {
         super(context, service);
@@ -47,16 +49,20 @@ public final class PrivacyAccountManager extends AccountManager {
     
     @Override
     public Account[] getAccounts() {
-        PrivacySettings pSet = pSetMan.getSettings(context.getPackageName(), Binder.getCallingUid());
+        String packageName = context.getPackageName();
+        int uid = Binder.getCallingUid();
+        PrivacySettings pSet = pSetMan.getSettings(packageName, uid);
         String output_label;
         Account[] output;
         
         if (pSet != null && pSet.getAccountsSetting() != PrivacySettings.REAL) {
             output_label = "[empty accounts list]";
             output = new Account[0];
+            pSetMan.notification(packageName, uid, PrivacySettings.EMPTY, PrivacySettings.DATA_ACCOUNTS_LIST, null);
         } else {
             output_label = "[real value]";
             output = super.getAccounts(); 
+            pSetMan.notification(packageName, uid, PrivacySettings.REAL, PrivacySettings.DATA_ACCOUNTS_LIST, null);
         }
         
 //        Log.d(TAG, "getAccounts - " + context.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output_label);        
@@ -65,16 +71,20 @@ public final class PrivacyAccountManager extends AccountManager {
 
     @Override
     public Account[] getAccountsByType(String type) {
-        PrivacySettings pSet = pSetMan.getSettings(context.getPackageName(), Binder.getCallingUid());
+        String packageName = context.getPackageName();
+        int uid = Binder.getCallingUid();        
+        PrivacySettings pSet = pSetMan.getSettings(packageName, uid);
         String output_label;
         Account[] output;
         
         if (pSet != null && pSet.getAccountsSetting() != PrivacySettings.REAL) {
             output_label = "[empty accounts list]";
             output = new Account[0];
+            pSetMan.notification(packageName, uid, PrivacySettings.EMPTY, PrivacySettings.DATA_ACCOUNTS_LIST, null);
         } else {
             output_label = "[real value]";
             output = super.getAccountsByType(type);
+            pSetMan.notification(packageName, uid, PrivacySettings.REAL, PrivacySettings.DATA_ACCOUNTS_LIST, null);
         }
         
 //        Log.d(TAG, "getAccountsByType - " + context.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output_label);        
@@ -84,16 +94,20 @@ public final class PrivacyAccountManager extends AccountManager {
     @Override
     public AccountManagerFuture<Boolean> hasFeatures(Account account, String[] features,
             AccountManagerCallback<Boolean> callback, Handler handler) {
-        PrivacySettings pSet = pSetMan.getSettings(context.getPackageName(), Binder.getCallingUid());
+        String packageName = context.getPackageName();
+        int uid = Binder.getCallingUid();        
+        PrivacySettings pSet = pSetMan.getSettings(packageName, uid);        
         String output_label;
         AccountManagerFuture<Boolean> output;
         
         if (pSet != null && pSet.getAccountsSetting() != PrivacySettings.REAL) {
             output_label = "[false]";
             output = new PrivacyAccountManagerFuture<Boolean>(false);
+            pSetMan.notification(packageName, uid, PrivacySettings.EMPTY, PrivacySettings.DATA_ACCOUNTS_LIST, null);      
         } else {
             output_label = "[real value]";
             output = super.hasFeatures(account, features, callback, handler);
+            pSetMan.notification(packageName, uid, PrivacySettings.REAL, PrivacySettings.DATA_ACCOUNTS_LIST, null);            
         }
         
 //        Log.d(TAG, "hasFeatures - " + context.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output_label);        
@@ -103,16 +117,20 @@ public final class PrivacyAccountManager extends AccountManager {
     @Override
     public AccountManagerFuture<Account[]> getAccountsByTypeAndFeatures(String type, String[] features,
             AccountManagerCallback<Account[]> callback, Handler handler) {
-        PrivacySettings pSet = pSetMan.getSettings(context.getPackageName(), Binder.getCallingUid());
+        String packageName = context.getPackageName();
+        int uid = Binder.getCallingUid();        
+        PrivacySettings pSet = pSetMan.getSettings(packageName, uid);       
         String output_label;
         AccountManagerFuture<Account[]> output;
         
         if (pSet != null && pSet.getAccountsSetting() != PrivacySettings.REAL) {
             output_label = "[false]";
             output = new PrivacyAccountManagerFuture<Account[]>(new Account[0]);
+            pSetMan.notification(packageName, uid, PrivacySettings.EMPTY, PrivacySettings.DATA_ACCOUNTS_LIST, null);      
         } else {
             output_label = "[real value]";
             output = super.getAccountsByTypeAndFeatures(type, features, callback, handler);
+            pSetMan.notification(packageName, uid, PrivacySettings.REAL, PrivacySettings.DATA_ACCOUNTS_LIST, null);            
         }
         
 //        Log.d(TAG, "getAccountsByTypeAndFeatures - " + context.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output_label);           
@@ -126,13 +144,17 @@ public final class PrivacyAccountManager extends AccountManager {
     @Override
     public String blockingGetAuthToken(Account account, String authTokenType, boolean notifyAuthFailure)
             throws OperationCanceledException, IOException, AuthenticatorException {
-        PrivacySettings pSet = pSetMan.getSettings(context.getPackageName(), Binder.getCallingUid());
+        String packageName = context.getPackageName();
+        int uid = Binder.getCallingUid();        
+        PrivacySettings pSet = pSetMan.getSettings(packageName, uid);    
         String output;
         
         if (pSet != null && pSet.getAccountsAuthTokensSetting() != PrivacySettings.REAL) {
             output = null;
+            pSetMan.notification(packageName, uid, PrivacySettings.EMPTY, PrivacySettings.DATA_AUTH_TOKENS, null);      
         } else {
             output = super.blockingGetAuthToken(account, authTokenType, notifyAuthFailure);
+            pSetMan.notification(packageName, uid, PrivacySettings.REAL, PrivacySettings.DATA_AUTH_TOKENS, null);      
         }
         
 //        Log.d(TAG, "blockingGetAuthToken - " + context.getPackageName() + " (" + Binder.getCallingUid() + ") output: " 
@@ -143,16 +165,20 @@ public final class PrivacyAccountManager extends AccountManager {
     @Override
     public AccountManagerFuture<Bundle> getAuthToken(Account account, String authTokenType, boolean notifyAuthFailure,
             AccountManagerCallback<Bundle> callback, Handler handler) {
-        PrivacySettings pSet = pSetMan.getSettings(context.getPackageName(), Binder.getCallingUid());
+        String packageName = context.getPackageName();
+        int uid = Binder.getCallingUid();        
+        PrivacySettings pSet = pSetMan.getSettings(packageName, uid);   
         String output_label;
         AccountManagerFuture<Bundle> output;
         
         if (pSet != null && pSet.getAccountsAuthTokensSetting() != PrivacySettings.REAL) {
             output_label = "[empty]";
             output = new PrivacyAccountManagerFuture<Bundle>(new Bundle());
+            pSetMan.notification(packageName, uid, PrivacySettings.EMPTY, PrivacySettings.DATA_AUTH_TOKENS, null);      
         } else {
             output_label = "[real value]";
             output = super.getAuthToken(account, authTokenType, notifyAuthFailure, callback, handler);
+            pSetMan.notification(packageName, uid, PrivacySettings.REAL, PrivacySettings.DATA_AUTH_TOKENS, null);      
         }
         
 //        Log.d(TAG, "getAuthToken - " + context.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output_label);           
@@ -162,16 +188,20 @@ public final class PrivacyAccountManager extends AccountManager {
     @Override
     public AccountManagerFuture<Bundle> getAuthToken(Account account, String authTokenType, Bundle options,
             Activity activity, AccountManagerCallback<Bundle> callback, Handler handler) {
-        PrivacySettings pSet = pSetMan.getSettings(context.getPackageName(), Binder.getCallingUid());
+        String packageName = context.getPackageName();
+        int uid = Binder.getCallingUid();        
+        PrivacySettings pSet = pSetMan.getSettings(packageName, uid);   
         String output_label;
         AccountManagerFuture<Bundle> output;
         
         if (pSet != null && pSet.getAccountsAuthTokensSetting() != PrivacySettings.REAL) {
             output_label = "[empty]";
             output = new PrivacyAccountManagerFuture<Bundle>(new Bundle());
+            pSetMan.notification(packageName, uid, PrivacySettings.EMPTY, PrivacySettings.DATA_AUTH_TOKENS, null);      
         } else {
             output_label = "[real value]";
             output = super.getAuthToken(account, authTokenType, options, activity, callback, handler);
+            pSetMan.notification(packageName, uid, PrivacySettings.REAL, PrivacySettings.DATA_AUTH_TOKENS, null);      
         }
         
 //        Log.d(TAG, "getAuthToken - " + context.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output_label);           
@@ -186,17 +216,21 @@ public final class PrivacyAccountManager extends AccountManager {
     public AccountManagerFuture<Bundle> getAuthTokenByFeatures(String accountType, String authTokenType,
             String[] features, Activity activity, Bundle addAccountOptions, Bundle getAuthTokenOptions,
             AccountManagerCallback<Bundle> callback, Handler handler) {
-        PrivacySettings pSet = pSetMan.getSettings(context.getPackageName(), Binder.getCallingUid());
+        String packageName = context.getPackageName();
+        int uid = Binder.getCallingUid();        
+        PrivacySettings pSet = pSetMan.getSettings(packageName, uid);   
         String output_label;
         AccountManagerFuture<Bundle> output;
         
         if (pSet != null && pSet.getAccountsAuthTokensSetting() != PrivacySettings.REAL) {
             output_label = "[empty]";
             output = new PrivacyAccountManagerFuture<Bundle>(new Bundle());
+            pSetMan.notification(packageName, uid, PrivacySettings.EMPTY, PrivacySettings.DATA_AUTH_TOKENS, null);      
         } else {
             output_label = "[real value]";
             output = super.getAuthTokenByFeatures(accountType, authTokenType, features, activity, addAccountOptions,
                     getAuthTokenOptions, callback, handler);
+            pSetMan.notification(packageName, uid, PrivacySettings.REAL, PrivacySettings.DATA_AUTH_TOKENS, null);      
         }
         
 //        Log.d(TAG, "getAuthTokenByFeatures - " + context.getPackageName() + " (" + Binder.getCallingUid() + ") output: " + output_label);           

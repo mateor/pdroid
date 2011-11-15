@@ -2,16 +2,19 @@ package android.privacy;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
-import android.os.Binder;
 import android.util.Log;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * Responsible for persisting privacy settings to built-in memory
@@ -33,7 +36,7 @@ public class PrivacyPersistenceAdapter {
     /**
      * Used to save settings for access from core libraries
      */
-    private static final String SETTINGS_DIRECTORY = "/data/system/privacy";
+    public static final String SETTINGS_DIRECTORY = "/data/system/privacy";
 
     private static final String DATABASE_TABLE = "settings";
 
@@ -84,8 +87,11 @@ public class PrivacyPersistenceAdapter {
         "systemLogsSetting", "externalStorageSetting", "cameraSetting", "recordAudioSetting" };
 
     private SQLiteDatabase db;
+    
+    private Context context;
 
     public PrivacyPersistenceAdapter(Context context) {
+        this.context = context;
         // check write permission for /data/system/
         boolean canWrite = new File("/data/system/").canWrite();
 //        Log.d(TAG, "Constructing " + TAG + " for package: " +  context.getPackageName() + 
@@ -164,7 +170,6 @@ public class PrivacyPersistenceAdapter {
                 // only close DB if no other threads are reading
                 if (readingThreads == 0 && db != null && db.isOpen()) {
                     db.close();
-                    db = null;
                 }
             }
         }
@@ -338,7 +343,7 @@ public class PrivacyPersistenceAdapter {
             systemLogsSettingFile.delete();
             // delete the parent directories
             settingsUidDir.delete();
-            settingsPackageDir.delete();
+            if (settingsPackageDir.list() == null || settingsPackageDir.list().length == 0) settingsPackageDir.delete();
             // mark DB transaction successful (commit the changes)
             db.setTransactionSuccessful();
         } catch (Exception e) {
@@ -370,6 +375,77 @@ public class PrivacyPersistenceAdapter {
         }
         if (success == false) throw new Exception("query - failed to execute query on the DB");
         return c;
+    }
+    
+    public boolean purgeSettings() {
+        boolean result = true;
+        
+        // get installed apps
+        HashMap<String, Integer> apps = new HashMap<String, Integer>();
+        PackageManager pMan = context.getPackageManager();
+        List<ApplicationInfo> installedApps = pMan.getInstalledApplications(PackageManager.GET_META_DATA);
+        for (ApplicationInfo appInfo : installedApps) { 
+            apps.put(appInfo.packageName, appInfo.uid);
+        }
+        
+        // delete obsolete settings directories
+        File settingsDir = new File(SETTINGS_DIRECTORY);
+        for (File subDir : settingsDir.listFiles()) {
+            String packageName = subDir.getName();
+            if (!apps.containsKey(packageName)) {
+                deleteRecursive(subDir);
+            } else {
+                for (File subSubDir : subDir.listFiles()) {
+                    try {
+                        int uid = Integer.parseInt(subSubDir.getName());
+                        if (apps.get(packageName) != uid) {
+                            deleteRecursive(subSubDir);
+                        }
+                        if (subDir.listFiles() == null || subDir.listFiles().length == 0) {
+                            deleteRecursive(subDir);
+                        }
+                    } catch (NumberFormatException e) {
+                        deleteRecursive(subSubDir);
+                    }
+                }
+            }
+        }
+        
+        // delete obsolete entries from DB
+        readingThreads++;
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor c = null;
+        try {
+            c = query(db, DATABASE_TABLE, new String[] {"packageName", "uid"}, null, null, null, null, null);
+            while (c.moveToNext()) {
+                String packageName = c.getString(0);
+                int uid = c.getInt(1);
+                if (!apps.containsKey(packageName) || apps.get(packageName) != uid) {
+                    deleteSettings(packageName, uid);
+//                    Log.d(TAG, "purgeSettings - deleting DB settings for " + packageName + " " + uid);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            result = false;
+        } finally {
+            if (c != null) c.close();
+            synchronized (readingThreads) {
+                readingThreads--;
+                // only close DB if no other threads are reading
+                if (readingThreads == 0 && db != null && db.isOpen()) {
+                    db.close();
+                }
+            }
+        }
+        return result;
+    }
+    
+    private void deleteRecursive(File fileOrDirectory) {
+        if (fileOrDirectory.isDirectory()) {
+            for (File child : fileOrDirectory.listFiles()) deleteRecursive(child);
+        }
+        fileOrDirectory.delete();
     }
     
     private synchronized void createDatabase() {

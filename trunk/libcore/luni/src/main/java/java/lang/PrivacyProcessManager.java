@@ -33,18 +33,24 @@ public class PrivacyProcessManager {
         }
         try {
             // get setting value
-            PrivacyFileReader freader = new PrivacyFileReader("/data/system/privacy/" + 
-                    packageName + "/" + uid + "/" + setting);
-            String line = freader.readLine().trim();
-            int systemLogsSetting = Integer.parseInt(line);
+            String settingsFilePath = "/data/system/privacy/" + packageName + "/" + uid + "/" + setting;
+            PrivacyFileReader freader = new PrivacyFileReader(settingsFilePath);
+            String line = freader.readLine();
+            int systemLogsSetting = line != null ? Integer.parseInt(line.trim()) : -1;
             freader.close();
+            
             // get the command line of starting process
-            freader = new PrivacyFileReader("/proc/" + pid + "/cmdline");
-            String proc = "";
-            while (proc.isEmpty()) proc = freader.readLine().trim();
+            String commandLineFile = "/proc/" + pid + "/cmdline";
+            freader = new PrivacyFileReader(commandLineFile);
+            String proc = null;
+            while (proc == null || proc.isEmpty()) {
+                proc = freader.readLine();
+                proc = proc != null ? proc.trim() : proc;
+            }
             freader.close();
+            
             // check permission
-            if (systemLogsSetting == 1 && proc.length() > 5 && proc.contains("logcat")) {
+            if (systemLogsSetting == 1 && proc != null && proc.length() > 5 && proc.contains("logcat")) {
                 output = false;
             }
         } catch (FileNotFoundException e) {

@@ -39,13 +39,35 @@ public final class PrivacySettings implements Parcelable {
      */
     public static final byte RANDOM = 3;
     
+    // constants for identification of data types transmitted in the notification intent
+    public static final String DATA_DEVICE_ID = "deviceID";
+    public static final String DATA_LINE_1_NUMBER = "line1Number";
+    public static final String DATA_LOCATION_GPS = "locationGPS";
+    public static final String DATA_LOCATION_NETWORK = "locationNetwork";
+    public static final String DATA_NETWORK_INFO_CURRENT = "networkInfoCurrent";
+    public static final String DATA_NETWORK_INFO_SIM = "networkInfoSIM";
+    public static final String DATA_SIM_SERIAL = "simSerial";
+    public static final String DATA_SUBSCRIBER_ID = "subscriberID";
+    public static final String DATA_ACCOUNTS_LIST = "accountsList";
+    public static final String DATA_AUTH_TOKENS = "authTokens";
+    public static final String DATA_OUTGOING_CALL = "outgoingCall";
+    public static final String DATA_INCOMING_CALL = "incomingCall";
+    public static final String DATA_CONTACTS = "contacts";
+    public static final String DATA_CALENDAR = "calendar";
+    public static final String DATA_MMS = "mms";
+    public static final String DATA_SMS = "sms";
+    public static final String DATA_MMS_SMS = "mmsSms";
+    public static final String DATA_CALL_LOG = "callLog";
+    public static final String DATA_BOOKMARKS = "bookmarks";
+    public static final String DATA_SYSTEM_LOGS = "systemLogs";
+//    public static final String DATA_EXTERNAL_STORAGE = "externalStorage";
+//    public static final String DATA_CAMERA = "camera";
+//    public static final String DATA_RECORD_AUDIO = "recordAudio";
+    
     // Database entry ID
     private final Integer _id;
     
-    //
     // Application identifiers
-    //
-    
     private String packageName;
     private int uid;
     
@@ -89,9 +111,9 @@ public final class PrivacySettings implements Parcelable {
     private byte bookmarksSetting; // browser bookmarks and history
     
     private byte systemLogsSetting;
-    private byte externalStorageSetting;
-    private byte cameraSetting;
-    private byte recordAudioSetting;
+//    private byte externalStorageSetting;
+//    private byte cameraSetting;
+//    private byte recordAudioSetting;
 
     public PrivacySettings(Integer _id, String packageName, int uid) {
         this._id = _id;
@@ -126,9 +148,9 @@ public final class PrivacySettings implements Parcelable {
         this.callLogSetting = REAL;
         this.bookmarksSetting = REAL;
         this.systemLogsSetting = REAL;
-        this.externalStorageSetting = REAL;
-        this.cameraSetting = REAL;
-        this.recordAudioSetting = REAL;
+//        this.externalStorageSetting = REAL;
+//        this.cameraSetting = REAL;
+//        this.recordAudioSetting = REAL;
     }
     
     public PrivacySettings(Integer id, String packageName, int uid, byte deviceIdSetting, String deviceId,
@@ -171,9 +193,9 @@ public final class PrivacySettings implements Parcelable {
         this.callLogSetting = callLogSetting;
         this.bookmarksSetting = bookmarksSetting;
         this.systemLogsSetting = systemLogsSetting;
-        this.externalStorageSetting = externalStorageSetting;
-        this.cameraSetting = cameraSetting;
-        this.recordAudioSetting = recordAudioSetting;        
+//        this.externalStorageSetting = externalStorageSetting;
+//        this.cameraSetting = cameraSetting;
+//        this.recordAudioSetting = recordAudioSetting;        
     }
 
     public Integer get_id() {
@@ -443,48 +465,46 @@ public final class PrivacySettings implements Parcelable {
         this.systemLogsSetting = systemLogsSetting;
     }
 
-    public byte getExternalStorageSetting() {
-        return externalStorageSetting;
-    }
-
-    public void setExternalStorageSetting(byte externalStorageSetting) {
-        this.externalStorageSetting = externalStorageSetting;
-    }
-
-    public byte getCameraSetting() {
-        return cameraSetting;
-    }
-
-    public void setCameraSetting(byte cameraSetting) {
-        this.cameraSetting = cameraSetting;
-    }
-
-    public byte getRecordAudioSetting() {
-        return recordAudioSetting;
-    }
-
-    public void setRecordAudioSetting(byte recordAudioSetting) {
-        this.recordAudioSetting = recordAudioSetting;
-    }
+//    public byte getExternalStorageSetting() {
+//        return externalStorageSetting;
+//    }
+//
+//    public void setExternalStorageSetting(byte externalStorageSetting) {
+//        this.externalStorageSetting = externalStorageSetting;
+//    }
+//
+//    public byte getCameraSetting() {
+//        return cameraSetting;
+//    }
+//
+//    public void setCameraSetting(byte cameraSetting) {
+//        this.cameraSetting = cameraSetting;
+//    }
+//
+//    public byte getRecordAudioSetting() {
+//        return recordAudioSetting;
+//    }
+//
+//    public void setRecordAudioSetting(byte recordAudioSetting) {
+//        this.recordAudioSetting = recordAudioSetting;
+//    }
 
     @Override
     public String toString() {
         return "PrivacySettings [_id=" + _id + ", accountsAuthTokensSetting=" + accountsAuthTokensSetting
                 + ", accountsSetting=" + accountsSetting + ", bookmarksSetting=" + bookmarksSetting
-                + ", calendarSetting=" + calendarSetting + ", callLogSetting=" + callLogSetting + ", cameraSetting="
-                + cameraSetting + ", contactsSetting=" + contactsSetting + ", deviceId=" + deviceId
-                + ", deviceIdSetting=" + deviceIdSetting + ", externalStorageSetting=" + externalStorageSetting
+                + ", calendarSetting=" + calendarSetting + ", callLogSetting=" + callLogSetting + ", contactsSetting="
+                + contactsSetting + ", deviceId=" + deviceId + ", deviceIdSetting=" + deviceIdSetting
                 + ", incomingCallsSetting=" + incomingCallsSetting + ", line1Number=" + line1Number
                 + ", line1NumberSetting=" + line1NumberSetting + ", locationGpsLat=" + locationGpsLat
                 + ", locationGpsLon=" + locationGpsLon + ", locationGpsSetting=" + locationGpsSetting
                 + ", locationNetworkLat=" + locationNetworkLat + ", locationNetworkLon=" + locationNetworkLon
                 + ", locationNetworkSetting=" + locationNetworkSetting + ", mmsSetting=" + mmsSetting
                 + ", networkInfoSetting=" + networkInfoSetting + ", outgoingCallsSetting=" + outgoingCallsSetting
-                + ", packageName=" + packageName + ", recordAudioSetting=" + recordAudioSetting + ", simInfoSetting="
-                + simInfoSetting + ", simSerialNumber=" + simSerialNumber + ", simSerialNumberSetting="
-                + simSerialNumberSetting + ", smsSetting=" + smsSetting + ", subscriberId=" + subscriberId
-                + ", subscriberIdSetting=" + subscriberIdSetting + ", systemLogsSetting=" + systemLogsSetting
-                + ", uid=" + uid + "]";
+                + ", packageName=" + packageName + ", simInfoSetting=" + simInfoSetting + ", simSerialNumber="
+                + simSerialNumber + ", simSerialNumberSetting=" + simSerialNumberSetting + ", smsSetting=" + smsSetting
+                + ", subscriberId=" + subscriberId + ", subscriberIdSetting=" + subscriberIdSetting
+                + ", systemLogsSetting=" + systemLogsSetting + ", uid=" + uid + "]";
     }
 
     /**
@@ -552,9 +572,9 @@ public final class PrivacySettings implements Parcelable {
         this.callLogSetting = in.readByte();
         this.bookmarksSetting = in.readByte();
         this.systemLogsSetting = in.readByte();
-        this.externalStorageSetting = in.readByte();
-        this.cameraSetting = in.readByte();
-        this.recordAudioSetting = in.readByte();
+//        this.externalStorageSetting = in.readByte();
+//        this.cameraSetting = in.readByte();
+//        this.recordAudioSetting = in.readByte();
     }
     
     @Override
@@ -591,9 +611,9 @@ public final class PrivacySettings implements Parcelable {
         dest.writeByte(callLogSetting);
         dest.writeByte(bookmarksSetting);
         dest.writeByte(systemLogsSetting);
-        dest.writeByte(externalStorageSetting);
-        dest.writeByte(cameraSetting);
-        dest.writeByte(recordAudioSetting);
+//        dest.writeByte(externalStorageSetting);
+//        dest.writeByte(cameraSetting);
+//        dest.writeByte(recordAudioSetting);
     }
     
     @Override

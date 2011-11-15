@@ -1,6 +1,7 @@
 package android.privacy;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Binder;
 import android.os.RemoteException;
 import android.util.Log;
@@ -11,7 +12,9 @@ import android.util.Log;
  */
 public class PrivacySettingsManager {
 
-    private String TAG = "PrivacySettingsManager";
+    private static final String TAG = "PrivacySettingsManager";
+    
+    public static final String ACTION_PRIVACY_NOTIFICATION = "com.privacy.pdroid.PRIVACY_NOTIFICATION";
     
     private IPrivacySettingsManager service;
     
@@ -78,4 +81,54 @@ public class PrivacySettingsManager {
         if (service != null) return true;
         return false;
     }
+    
+    public void notification(String packageName, int uid, byte accessMode, String dataType, String output) {
+        try {
+            if (service != null) {
+                service.notification(packageName, uid, accessMode, dataType, output);
+            } else {
+                Log.e(TAG, "deleteSettings - PrivacySettingsManagerService is null");
+            }            
+        } catch (RemoteException e) {
+            Log.e(TAG, "RemoteException in notification: ", e);
+        }
+    }
+    
+    public void registerObservers() {
+        try {
+            if (service != null) {
+                service.registerObservers();
+            } else {
+                Log.e(TAG, "deleteSettings - PrivacySettingsManagerService is null");
+            }            
+        } catch (RemoteException e) {
+            Log.e(TAG, "RemoteException in registerObservers: ", e);
+        }
+    }
+    
+    public void addObserver(String packageName) {
+        try {
+            if (service != null) {
+                service.addObserver(packageName);
+            } else {
+                Log.e(TAG, "deleteSettings - PrivacySettingsManagerService is null");
+            }
+        } catch (RemoteException e) {
+            Log.e(TAG, "RemoteException in addObserver: ", e);
+        }
+    }
+    
+    public boolean purgeSettings() {
+        try {
+            if (service != null) {
+                return service.purgeSettings();
+            } else {
+                Log.e(TAG, "deleteSettings - PrivacySettingsManagerService is null");
+            }
+        } catch (RemoteException e) {
+            Log.e(TAG, "RemoteException in purgeSettings: ", e);
+        }
+        return false;
+    }
+    
 }
