@@ -45,7 +45,7 @@ public final class PrivacyLocationManager extends LocationManager {
         int uid = Binder.getCallingUid();
         PrivacySettings pSet = pSetMan.getSettings(packageName, uid);
         
-        if (pSet.getLocationGpsSetting() != PrivacySettings.REAL) {
+        if (pSet != null && pSet.getLocationGpsSetting() != PrivacySettings.REAL) {
             pSetMan.notification(packageName, uid, PrivacySettings.EMPTY, PrivacySettings.DATA_LOCATION_GPS, null);
             return false;
         } else {
