@@ -2,6 +2,7 @@ package android.privacy;
 
 import android.content.Context;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDebug.DbStats;
 import android.os.Binder;
 import android.os.RemoteException;
 import android.util.Log;
@@ -17,6 +18,8 @@ public class PrivacySettingsManager {
     public static final String ACTION_PRIVACY_NOTIFICATION = "com.privacy.pdroid.PRIVACY_NOTIFICATION";
     
     private IPrivacySettingsManager service;
+    
+    private static final double VERSION = 1.2;
     
     /**
      * @hide - this should be instantiated through Context.getSystemService
@@ -82,16 +85,18 @@ public class PrivacySettingsManager {
         return false;
     }
     
-    public void notification(String packageName, int uid, byte accessMode, String dataType, String output) {
-        try {
-            if (service != null) {
-                service.notification(packageName, uid, accessMode, dataType, output);
-            } else {
-                Log.e(TAG, "deleteSettings - PrivacySettingsManagerService is null");
-            }            
-        } catch (RemoteException e) {
-            Log.e(TAG, "RemoteException in notification: ", e);
-        }
+    public void notification(String packageName, int uid, byte accessMode, String dataType, String output, PrivacySettings pSet) {
+//        if (pSet != null && pSet.getNotificationSetting() == PrivacySettings.SETTING_NOTIFY_ON) {
+            try {
+                if (service != null) {
+                    service.notification(packageName, uid, accessMode, dataType, output);
+                } else {
+                    Log.e(TAG, "deleteSettings - PrivacySettingsManagerService is null");
+                }            
+            } catch (RemoteException e) {
+                Log.e(TAG, "RemoteException in notification: ", e);
+            }
+//        }
     }
     
     public void registerObservers() {
@@ -129,6 +134,10 @@ public class PrivacySettingsManager {
             Log.e(TAG, "RemoteException in purgeSettings: ", e);
         }
         return false;
+    }
+    
+    public double getVersion() {
+        return VERSION;
     }
     
 }

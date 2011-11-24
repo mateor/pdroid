@@ -74,7 +74,8 @@ public class PrivacyPersistenceAdapter {
             " systemLogsSetting INTEGER, " + 
             " externalStorageSetting INTEGER, " + 
             " cameraSetting INTEGER, " + 
-            " recordAudioSetting INTEGER" + 
+            " recordAudioSetting INTEGER, " + 
+            " notificationSetting INTEGER" + 
             ");";
     
     private static final String[] DATABASE_FIELDS = new String[] { "_id", "packageName", "uid", 
@@ -84,7 +85,7 @@ public class PrivacyPersistenceAdapter {
         "simSerialNumber", "subscriberIdSetting", "subscriberId", "accountsSetting", "accountsAuthTokensSetting", 
         "outgoingCallsSetting", "incomingCallsSetting", "contactsSetting", "calendarSetting", 
         "mmsSetting", "smsSetting", "callLogSetting", "bookmarksSetting", 
-        "systemLogsSetting", "externalStorageSetting", "cameraSetting", "recordAudioSetting" };
+        "systemLogsSetting", "externalStorageSetting", "cameraSetting", "recordAudioSetting", "notificationSetting" };
 
     private SQLiteDatabase db;
     
@@ -150,7 +151,7 @@ public class PrivacyPersistenceAdapter {
                             c.getString(16), (byte)c.getShort(17), c.getString(18), (byte)c.getShort(19), (byte)c.getShort(20), 
                             (byte)c.getShort(21), (byte)c.getShort(22), (byte)c.getShort(23), (byte)c.getShort(24), (byte)c.getShort(25), 
                             (byte)c.getShort(26), (byte)c.getShort(27), (byte)c.getShort(28), (byte)c.getShort(29), (byte)c.getShort(30), 
-                            (byte)c.getShort(31), (byte)c.getShort(32));
+                            (byte)c.getShort(31), (byte)c.getShort(32), (byte)c.getShort(33));
 //                    Log.d(TAG, "getSettings - found settings entry for package: " + packageName + " UID: " + uid);
                 } else if (c.getCount() > 1) {
                     // multiple settings entries have same package name AND UID; this should NEVER happen
@@ -234,6 +235,7 @@ public class PrivacyPersistenceAdapter {
         values.put("callLogSetting", s.getCallLogSetting());
         values.put("bookmarksSetting", s.getBookmarksSetting());
         values.put("systemLogsSetting", s.getSystemLogsSetting());
+        values.put("notificationSetting", s.getNotificationSetting());
 //        values.put("externalStorageSetting", s.getExternalStorageSetting());
 //        values.put("cameraSetting", s.getCameraSetting());
 //        values.put("recordAudioSetting", s.getRecordAudioSetting());

@@ -64,12 +64,12 @@ public final class PrivacyActivityManagerService {
                 if (pSet != null && pSet.getOutgoingCallsSetting() != PrivacySettings.REAL) {
                     output = "";
                     intent.putExtra(Intent.EXTRA_PHONE_NUMBER, output);
-                    pSetMan.notification(packageName, uid, PrivacySettings.EMPTY, PrivacySettings.DATA_OUTGOING_CALL, null);
+                    pSetMan.notification(packageName, uid, PrivacySettings.EMPTY, PrivacySettings.DATA_OUTGOING_CALL, null, pSet);
                 } else if (tmpOutHash == hashCode(intent)) {
                     // if this intent was stored before, get the real value since it could have been modified
                     output = tmpOut.getStringExtra(Intent.EXTRA_PHONE_NUMBER);
                     intent.putExtra(Intent.EXTRA_PHONE_NUMBER, output);
-                    pSetMan.notification(packageName, uid, PrivacySettings.REAL, PrivacySettings.DATA_OUTGOING_CALL, null);
+                    pSetMan.notification(packageName, uid, PrivacySettings.REAL, PrivacySettings.DATA_OUTGOING_CALL, null, pSet);
                 }
             } catch (Exception e) {
                 Log.e(TAG, "failed to enforce intent broadcast permission", e);
@@ -87,8 +87,11 @@ public final class PrivacyActivityManagerService {
                 // the EXTRA_INCOMING_NUMBER is NOT only present when state is EXTRA_STATE_RINGING
                 // Android documentation is WRONG; the EXTRA_INCOMING_NUMBER will also be there when hanging up (IDLE?)
                 /* && intent.getStringExtra(TelephonyManager.EXTRA_STATE).equals(TelephonyManager.EXTRA_STATE_RINGING)*/) {
-            pSet = pSetMan.getSettings(packageName, uid);
             output = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER);
+            // don't do anything if no incoming phone number is broadcasted
+            if (output == null || output.isEmpty()) return;
+            
+            pSet = pSetMan.getSettings(packageName, uid);
             
             if (tmpInHash != hashCode(intent)) {
                 tmpIn = (Intent)intent.clone();
@@ -100,11 +103,11 @@ public final class PrivacyActivityManagerService {
                 if (pSet != null && pSet.getIncomingCallsSetting() != PrivacySettings.REAL) {
                     output = "";
                     intent.putExtra(TelephonyManager.EXTRA_INCOMING_NUMBER, output);
-                    pSetMan.notification(packageName, uid, PrivacySettings.EMPTY, PrivacySettings.DATA_INCOMING_CALL, null);
+                    pSetMan.notification(packageName, uid, PrivacySettings.EMPTY, PrivacySettings.DATA_INCOMING_CALL, null, pSet);
                 } else if (tmpInHash == hashCode(intent)) {
                     output = tmpIn.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER);
                     intent.putExtra(TelephonyManager.EXTRA_INCOMING_NUMBER, output);
-                    pSetMan.notification(packageName, uid, PrivacySettings.REAL, PrivacySettings.DATA_INCOMING_CALL, null);
+                    pSetMan.notification(packageName, uid, PrivacySettings.REAL, PrivacySettings.DATA_INCOMING_CALL, null, pSet);
                 }
             } catch (Exception e) {
                 Log.e(TAG, "failed to enforce intent broadcast permission", e);
@@ -148,7 +151,7 @@ public final class PrivacyActivityManagerService {
 //                    Log.d(TAG, "permission denied, replaced pdu; pdu number: " + 
 //                            (o != null ? o.length : "null") + " " +
 //                        "1st pdu length:" + (b != null ? b.length : "null"));
-                    pSetMan.notification(packageName, uid, PrivacySettings.EMPTY, PrivacySettings.DATA_SMS, null);
+                    pSetMan.notification(packageName, uid, PrivacySettings.EMPTY, PrivacySettings.DATA_SMS, null, pSet);
                 } else if (tmpSmsHash == hashCode(intent)) {
                     intent.putExtra("pdus", tmpSms.getSerializableExtra("pdus"));
                     
@@ -157,7 +160,7 @@ public final class PrivacyActivityManagerService {
 //                    Log.d(TAG, "permission granted, inserting saved pdus; pdu number: " + 
 //                            (o != null ? o.length : "null") + " " +
 //                            "1st pdu length:" + (b != null ? b.length : "null"));
-                    pSetMan.notification(packageName, uid, PrivacySettings.REAL, PrivacySettings.DATA_SMS, null);
+                    pSetMan.notification(packageName, uid, PrivacySettings.REAL, PrivacySettings.DATA_SMS, null, pSet);
                 }
             } catch (Exception e) {
                 Log.e(TAG, "failed to enforce intent broadcast permission", e);
@@ -198,7 +201,7 @@ public final class PrivacyActivityManagerService {
                     Object[] emptypdusObj = new Object[1];
                     emptypdusObj[0] = (Object) new byte[] {0,32,1,-127,-16,0,0,17,-112,1,48,34,34,-128,1,32};
                     intent.putExtra("pdus", emptypdusObj);
-                    pSetMan.notification(packageName, uid, PrivacySettings.EMPTY, PrivacySettings.DATA_MMS, null);
+                    pSetMan.notification(packageName, uid, PrivacySettings.EMPTY, PrivacySettings.DATA_MMS, null, pSet);
                 } else if (tmpMmsHash == hashCode(intent)) {
                     intent.putExtra("pdus", tmpMms.getSerializableExtra("pdus"));
                     
@@ -207,7 +210,7 @@ public final class PrivacyActivityManagerService {
 //                    Log.d(TAG, "permission granted, inserting saved pdus; pdu number: " + 
 //                            (o != null ? o.length : "null") + " " +
 //                            "1st pdu length:" + (b != null ? b.length : "null"));
-                    pSetMan.notification(packageName, uid, PrivacySettings.REAL, PrivacySettings.DATA_MMS, null);
+                    pSetMan.notification(packageName, uid, PrivacySettings.REAL, PrivacySettings.DATA_MMS, null, pSet);
                 }
             } catch (Exception e) {
                 Log.e(TAG, "failed to enforce intent broadcast permission", e);

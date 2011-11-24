@@ -42,7 +42,7 @@ public class PrivacyFileObserver extends FileObserver {
     @Override
     public void onEvent(int event, String path) {
         if ((FileObserver.ACCESS & event) != 0) { // data was read from a file
-            Log.d(TAG, "onEvent - file accessed: " + absolutePath);
+//            Log.d(TAG, "onEvent - file accessed: " + absolutePath);
             StringTokenizer tokenizer = new StringTokenizer(absolutePath, "/");
             for (int i = 0; i < PACKAGE_PATH_INDEX && tokenizer.hasMoreElements(); i++) {
                 tokenizer.nextToken();
@@ -74,15 +74,15 @@ public class PrivacyFileObserver extends FileObserver {
         children.put(observePath, child);
     }
 
-    @Override
-    public void startWatching() {
-        Log.d("PrivacyFileObserver", "PrivacyFileObserver - observing directory: " + absolutePath);
-        super.startWatching();
-    }
+//    @Override
+//    public void startWatching() {
+//        Log.d("PrivacyFileObserver", "PrivacyFileObserver - observing directory: " + absolutePath);
+//        super.startWatching();
+//    }
     
-    public void verifyObserver() {
-        Log.d(TAG, "verifyObservers - observer path: " + absolutePath);
-        for (PrivacyFileObserver obs : children.values()) obs.verifyObserver();
-    }
+//    public void verifyObserver() {
+//        Log.d(TAG, "verifyObservers - observer path: " + absolutePath);
+//        for (PrivacyFileObserver obs : children.values()) obs.verifyObserver();
+//    }
     
 }

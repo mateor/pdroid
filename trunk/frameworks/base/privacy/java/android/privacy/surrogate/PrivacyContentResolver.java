@@ -47,9 +47,9 @@ public final class PrivacyContentResolver {
                     if (pSet != null && pSet.getContactsSetting() == PrivacySettings.EMPTY) {
                         output_label = "[empty]";
                         output = new PrivacyCursor();
-                        pSetMan.notification(packageName, uid, PrivacySettings.EMPTY, PrivacySettings.DATA_CONTACTS, null);
+                        pSetMan.notification(packageName, uid, PrivacySettings.EMPTY, PrivacySettings.DATA_CONTACTS, null, pSet);
                     } else {
-                        pSetMan.notification(packageName, uid, PrivacySettings.REAL, PrivacySettings.DATA_CONTACTS, null);
+                        pSetMan.notification(packageName, uid, PrivacySettings.REAL, PrivacySettings.DATA_CONTACTS, null, pSet);
                     }
                     
                 } else if (auth.equals(Calendar.AUTHORITY)) {
@@ -57,9 +57,9 @@ public final class PrivacyContentResolver {
                     if (pSet != null && pSet.getCalendarSetting() == PrivacySettings.EMPTY) {
                         output_label = "[empty]";
                         output = new PrivacyCursor();
-                        pSetMan.notification(packageName, uid, PrivacySettings.EMPTY, PrivacySettings.DATA_CALENDAR, null);
+                        pSetMan.notification(packageName, uid, PrivacySettings.EMPTY, PrivacySettings.DATA_CALENDAR, null, pSet);
                     } else {
-                        pSetMan.notification(packageName, uid, PrivacySettings.REAL, PrivacySettings.DATA_CALENDAR, null);
+                        pSetMan.notification(packageName, uid, PrivacySettings.REAL, PrivacySettings.DATA_CALENDAR, null, pSet);
                     }
                     
                 } else if (auth.equals(Mms.CONTENT_URI.getAuthority())) {
@@ -67,9 +67,9 @@ public final class PrivacyContentResolver {
                     if (pSet != null && pSet.getMmsSetting() == PrivacySettings.EMPTY) {
                         output_label = "[empty]";
                         output = new PrivacyCursor();
-                        pSetMan.notification(packageName, uid, PrivacySettings.EMPTY, PrivacySettings.DATA_MMS, null);
+                        pSetMan.notification(packageName, uid, PrivacySettings.EMPTY, PrivacySettings.DATA_MMS, null, pSet);
                     } else {
-                        pSetMan.notification(packageName, uid, PrivacySettings.REAL, PrivacySettings.DATA_MMS, null);
+                        pSetMan.notification(packageName, uid, PrivacySettings.REAL, PrivacySettings.DATA_MMS, null, pSet);
                     }
                     
                 } else if (auth.equals(Sms.CONTENT_URI.getAuthority())) {
@@ -77,9 +77,9 @@ public final class PrivacyContentResolver {
                     if (pSet != null && pSet.getSmsSetting() == PrivacySettings.EMPTY) {
                         output_label = "[empty]";
                         output = new PrivacyCursor();
-                        pSetMan.notification(packageName, uid, PrivacySettings.EMPTY, PrivacySettings.DATA_SMS, null);
+                        pSetMan.notification(packageName, uid, PrivacySettings.EMPTY, PrivacySettings.DATA_SMS, null, pSet);
                     } else {
-                        pSetMan.notification(packageName, uid, PrivacySettings.REAL, PrivacySettings.DATA_SMS, null);
+                        pSetMan.notification(packageName, uid, PrivacySettings.REAL, PrivacySettings.DATA_SMS, null, pSet);
                     }
                 // all messages, sms and mms
                 } else if (auth.equals(MmsSms.CONTENT_URI.getAuthority()) || 
@@ -90,9 +90,9 @@ public final class PrivacyContentResolver {
                             pSet.getSmsSetting() == PrivacySettings.EMPTY)) {
                         output_label = "[empty]";
                         output = new PrivacyCursor();
-                        pSetMan.notification(packageName, uid, PrivacySettings.EMPTY, PrivacySettings.DATA_MMS_SMS, null);
+                        pSetMan.notification(packageName, uid, PrivacySettings.EMPTY, PrivacySettings.DATA_MMS_SMS, null, pSet);
                     } else {
-                        pSetMan.notification(packageName, uid, PrivacySettings.REAL, PrivacySettings.DATA_MMS_SMS, null);
+                        pSetMan.notification(packageName, uid, PrivacySettings.REAL, PrivacySettings.DATA_MMS_SMS, null, pSet);
                     }
 
                 } else if (auth.equals(CallLog.AUTHORITY)) {
@@ -100,9 +100,9 @@ public final class PrivacyContentResolver {
                     if (pSet != null && pSet.getCallLogSetting() == PrivacySettings.EMPTY) {
                         output_label = "[empty]";
                         output = new PrivacyCursor();
-                        pSetMan.notification(packageName, uid, PrivacySettings.EMPTY, PrivacySettings.DATA_CALL_LOG, null);
+                        pSetMan.notification(packageName, uid, PrivacySettings.EMPTY, PrivacySettings.DATA_CALL_LOG, null, pSet);
                     } else {
-                        pSetMan.notification(packageName, uid, PrivacySettings.REAL, PrivacySettings.DATA_CALL_LOG, null);
+                        pSetMan.notification(packageName, uid, PrivacySettings.REAL, PrivacySettings.DATA_CALL_LOG, null, pSet);
                     }
 
                 } else if (auth.equals(Browser.BOOKMARKS_URI.getAuthority())) {
@@ -110,9 +110,9 @@ public final class PrivacyContentResolver {
                     if (pSet != null && pSet.getBookmarksSetting() == PrivacySettings.EMPTY) {
                         output_label = "[empty]";
                         output = new PrivacyCursor();
-                        pSetMan.notification(packageName, uid, PrivacySettings.EMPTY, PrivacySettings.DATA_BOOKMARKS, null);
+                        pSetMan.notification(packageName, uid, PrivacySettings.EMPTY, PrivacySettings.DATA_BOOKMARKS, null, pSet);
                     } else {
-                        pSetMan.notification(packageName, uid, PrivacySettings.EMPTY, PrivacySettings.DATA_BOOKMARKS, null);
+                        pSetMan.notification(packageName, uid, PrivacySettings.REAL, PrivacySettings.DATA_BOOKMARKS, null, pSet);
                     }
                     
                 }

@@ -60,12 +60,12 @@ public class PrivacyCursor implements Cursor {
 
     @Override
     public int getColumnIndex(String columnName) {
-        return 0;
+        return -1;
     }
 
     @Override
     public int getColumnIndexOrThrow(String columnName) throws IllegalArgumentException {
-        return 0;
+        return -1;
     }
 
     @Override
@@ -110,7 +110,7 @@ public class PrivacyCursor implements Cursor {
 
     @Override
     public int getPosition() {
-        return 0;
+        return -1;
     }
 
     @Override
@@ -135,7 +135,7 @@ public class PrivacyCursor implements Cursor {
 
     @Override
     public boolean isAfterLast() {
-        return false;
+        return true;
     }
 
     @Override
@@ -267,4 +267,6 @@ public class PrivacyCursor implements Cursor {
     public boolean updateToNull(int columnIndex) {
         return false;
     }
+    
+    
 }
