@@ -35,6 +35,9 @@ public final class PrivacyActivityManagerService {
     private static long tmpMmsHash = 0;
     private static int tmpMmsReceivers = 0;
     
+    private static long tmpPackageAddedHash = 0;
+    private static int tmpPackageAddedReceivers = 0;
+    
     /**
      * Intercepts broadcasts and replaces the broadcast contents according to 
      * privacy permissions
@@ -183,6 +186,7 @@ public final class PrivacyActivityManagerService {
             Object[] o = ((Object[])intent.getSerializableExtra("pdus"));
             byte[] b = o != null ? (byte[])o[0] : null;
             
+            // TODO: remove unnecessary receivers count
             if (tmpMmsHash != hashCode(intent)) {
                 tmpMms = (Intent)intent.clone();
                 tmpMmsHash = hashCode(intent);
@@ -224,6 +228,36 @@ public final class PrivacyActivityManagerService {
             }
             
 //            Log.d(TAG, "broadcasting intent " + action + " - " + packageName + " (" + uid + ") output: " + output);
+//        } else if (action.equals(Intent.ACTION_BOOT_COMPLETED)) {
+//            pSet = pSetMan.getSettings(packageName, uid);
+//            
+//            if (pSet != null && pSet.getIntentBootCompletedSetting() != PrivacySettings.REAL) {
+//                // no notification since all applications will receive this -> spam
+//                intent.setAction("empty");
+////                pSetMan.notification(packageName, uid, PrivacySettings.EMPTY, PrivacySettings.DATA_INTENT_BOOT_COMPLETED, null, pSet);
+//            } else {
+//                intent.setAction(Intent.ACTION_BOOT_COMPLETED);
+////                pSetMan.notification(packageName, uid, PrivacySettings.REAL, PrivacySettings.DATA_INTENT_BOOT_COMPLETED, null, pSet);
+//            }
+        } else if (action.equals(Intent.ACTION_PACKAGE_ADDED)) {
+//            Log.d(TAG, "enforcePrivacyPermission - ACTION_PACKAGE_ADDED; receivers: " + receivers);
+            
+            // update privacy settings; only do this once for a single Intent
+            if (tmpPackageAddedHash != hashCode(intent)) {
+                tmpPackageAddedHash = hashCode(intent);
+                
+                String addedPackageName = intent.getData().getSchemeSpecificPart();
+                int addedUid = intent.getExtras().getInt(Intent.EXTRA_UID);
+//                Log.d(TAG, "enforcePrivacyPermission - installed package " + addedPackageName + " " + addedUid);
+                pSet = pSetMan.getSettings(addedPackageName, addedUid);
+                // the settings in the privacy DB contain a different UID
+                if (pSet != null && pSet.getUid() != addedUid) { // update the UID
+                    Log.i(TAG, "installed package UID (" + addedUid + ") doesn't match privacy settings UID (" + pSet.getUid() + "); updating...");
+                    pSet.setUid(addedUid);
+                    boolean updateSuccess = pSetMan.saveSettings(pSet);
+                    if (!updateSuccess) Log.w(TAG, "could not update privacy settings UID; purge needed");
+                }
+            }
         }
     }
     

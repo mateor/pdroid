@@ -13,6 +13,10 @@ import java.io.InputStreamReader;
  */
 public class PrivacyProcessManager {
     
+    private static final int GET_COMMAND_WAIT_MS = 10;
+    
+    private static final int GET_COMMAND_WAIT_STEP = 5;
+    
     /**
      * Verifies if the current process has privacy access permission
      * to the specified setting
@@ -32,26 +36,37 @@ public class PrivacyProcessManager {
             e.printStackTrace();
         }
         try {
-            // get setting value
-            String settingsFilePath = "/data/system/privacy/" + packageName + "/" + uid + "/" + setting;
-            PrivacyFileReader freader = new PrivacyFileReader(settingsFilePath);
-            String line = freader.readLine();
-            int systemLogsSetting = line != null ? Integer.parseInt(line.trim()) : -1;
-            freader.close();
+            PrivacyFileReader freader = null;
             
             // get the command line of starting process
             String commandLineFile = "/proc/" + pid + "/cmdline";
+//            System.err.println("PrivacyProcessManager - hasPrivacyPermission: creating command line file FileReader for " + commandLineFile);
             freader = new PrivacyFileReader(commandLineFile);
-            String proc = null;
-            while (proc == null || proc.isEmpty()) {
-                proc = freader.readLine();
-                proc = proc != null ? proc.trim() : proc;
+            String proc = "";
+            for (int i = GET_COMMAND_WAIT_MS; (proc = freader.readLine()) == null && i >= 0; i=- GET_COMMAND_WAIT_STEP) {
+                try {
+                    Thread.sleep(GET_COMMAND_WAIT_STEP);
+                } catch (InterruptedException e) {
+                    // ignore
+                }
+//                System.err.println("PrivacyProcessManager - hasPrivacyPermission: read \"" + proc + "\" from " + commandLineFile);
             }
             freader.close();
+//            System.err.println("PrivacyProcessManager - hasPrivacyPermission: process: " + proc);
             
-            // check permission
-            if (systemLogsSetting == 1 && proc != null && proc.length() > 5 && proc.contains("logcat")) {
-                output = false;
+            // check if logs are being read
+            if (proc != null && proc.trim().length() > 5 && proc.contains("logcat")) {
+                // get setting value
+                String settingsFilePath = "/data/system/privacy/" + packageName + "/" + uid + "/" + setting;
+//                System.err.println("PrivacyProcessManager - hasPrivacyPermission: creating settings file FileReader for " + settingsFilePath);
+                freader = new PrivacyFileReader(settingsFilePath);
+//                System.err.println("PrivacyProcessManager - hasPrivacyPermission: reading first line from " + settingsFilePath);
+                String line = freader.readLine();
+//                System.err.println("PrivacyProcessManager - hasPrivacyPermission: reading systemLogsSetting from the line");
+                int systemLogsSetting = line != null ? Integer.parseInt(line.trim()) : -1;
+                freader.close();
+                // check permission
+                if (systemLogsSetting == 1) output = false;
             }
         } catch (FileNotFoundException e) {
             // no setting for this application; do nothing
@@ -59,6 +74,7 @@ public class PrivacyProcessManager {
             System.err.println("PrivacyProcessManager: could not read privacy settings: " + setting);
             e.printStackTrace();
         }
+//        System.err.println("PrivacyProcessManager - hasPrivacyPermission: returning: " + output);
         
         return output;
     }

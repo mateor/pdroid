@@ -74,11 +74,11 @@ public class PrivacyFileObserver extends FileObserver {
         children.put(observePath, child);
     }
 
-//    @Override
-//    public void startWatching() {
+    @Override
+    public void startWatching() {
 //        Log.d("PrivacyFileObserver", "PrivacyFileObserver - observing directory: " + absolutePath);
-//        super.startWatching();
-//    }
+        super.startWatching();
+    }
     
 //    public void verifyObserver() {
 //        Log.d(TAG, "verifyObservers - observer path: " + absolutePath);

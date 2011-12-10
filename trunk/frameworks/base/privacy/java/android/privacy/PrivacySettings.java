@@ -3,6 +3,7 @@ package android.privacy;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.math.BigDecimal;
 import java.util.Random;
 
 /**
@@ -63,6 +64,7 @@ public final class PrivacySettings implements Parcelable {
     public static final String DATA_CALL_LOG = "callLog";
     public static final String DATA_BOOKMARKS = "bookmarks";
     public static final String DATA_SYSTEM_LOGS = "systemLogs";
+    public static final String DATA_INTENT_BOOT_COMPLETED = "intentBootCompleted";
 //    public static final String DATA_EXTERNAL_STORAGE = "externalStorage";
 //    public static final String DATA_CAMERA = "camera";
 //    public static final String DATA_RECORD_AUDIO = "recordAudio";
@@ -116,6 +118,8 @@ public final class PrivacySettings implements Parcelable {
     private byte systemLogsSetting;
     
     private byte notificationSetting;
+    
+    private byte intentBootCompletedSetting;
 //    private byte externalStorageSetting;
 //    private byte cameraSetting;
 //    private byte recordAudioSetting;
@@ -154,6 +158,7 @@ public final class PrivacySettings implements Parcelable {
         this.bookmarksSetting = REAL;
         this.systemLogsSetting = REAL;
         this.notificationSetting = SETTING_NOTIFY_OFF;
+        this.intentBootCompletedSetting = REAL;
 //        this.externalStorageSetting = REAL;
 //        this.cameraSetting = REAL;
 //        this.recordAudioSetting = REAL;
@@ -167,7 +172,7 @@ public final class PrivacySettings implements Parcelable {
             byte accountsAuthTokensSetting, byte outgoingCallsSetting, byte incomingCallsSetting, byte contactsSetting,
             byte calendarSetting, byte mmsSetting, byte smsSetting, byte callLogSetting, byte bookmarksSetting, 
             byte systemLogsSetting, byte externalStorageSetting, byte cameraSetting, byte recordAudioSetting, 
-            byte notificationSetting) {
+            byte notificationSetting, byte intentBootCompletedSetting) {
         this._id = id;
         
         this.packageName = packageName;
@@ -201,6 +206,7 @@ public final class PrivacySettings implements Parcelable {
         this.bookmarksSetting = bookmarksSetting;
         this.systemLogsSetting = systemLogsSetting;
         this.notificationSetting = notificationSetting;
+        this.intentBootCompletedSetting = intentBootCompletedSetting;
 //        this.externalStorageSetting = externalStorageSetting;
 //        this.cameraSetting = cameraSetting;
 //        this.recordAudioSetting = recordAudioSetting;        
@@ -277,7 +283,7 @@ public final class PrivacySettings implements Parcelable {
     public void setLocationGpsSetting(byte locationGpsSetting) {
         this.locationGpsSetting = locationGpsSetting;
     }
-
+    
     public String getLocationGpsLat() {
         if (locationGpsSetting == EMPTY) return "";
         if (locationGpsSetting == RANDOM) return getRandomLat();
@@ -473,31 +479,13 @@ public final class PrivacySettings implements Parcelable {
         this.systemLogsSetting = systemLogsSetting;
     }
 
-    
-    
-//    public byte getExternalStorageSetting() {
-//        return externalStorageSetting;
-//    }
-//
-//    public void setExternalStorageSetting(byte externalStorageSetting) {
-//        this.externalStorageSetting = externalStorageSetting;
-//    }
-//
-//    public byte getCameraSetting() {
-//        return cameraSetting;
-//    }
-//
-//    public void setCameraSetting(byte cameraSetting) {
-//        this.cameraSetting = cameraSetting;
-//    }
-//
-//    public byte getRecordAudioSetting() {
-//        return recordAudioSetting;
-//    }
-//
-//    public void setRecordAudioSetting(byte recordAudioSetting) {
-//        this.recordAudioSetting = recordAudioSetting;
-//    }
+    public byte getIntentBootCompletedSetting() {
+        return intentBootCompletedSetting;
+    }
+
+    public void setIntentBootCompletedSetting(byte intentBootCompletedSetting) {
+        this.intentBootCompletedSetting = intentBootCompletedSetting;
+    }
 
     public byte getNotificationSetting() {
         return notificationSetting;
@@ -513,15 +501,15 @@ public final class PrivacySettings implements Parcelable {
                 + ", accountsSetting=" + accountsSetting + ", bookmarksSetting=" + bookmarksSetting
                 + ", calendarSetting=" + calendarSetting + ", callLogSetting=" + callLogSetting + ", contactsSetting="
                 + contactsSetting + ", deviceId=" + deviceId + ", deviceIdSetting=" + deviceIdSetting
-                + ", incomingCallsSetting=" + incomingCallsSetting + ", line1Number=" + line1Number
-                + ", line1NumberSetting=" + line1NumberSetting + ", locationGpsLat=" + locationGpsLat
-                + ", locationGpsLon=" + locationGpsLon + ", locationGpsSetting=" + locationGpsSetting
-                + ", locationNetworkLat=" + locationNetworkLat + ", locationNetworkLon=" + locationNetworkLon
-                + ", locationNetworkSetting=" + locationNetworkSetting + ", mmsSetting=" + mmsSetting
-                + ", networkInfoSetting=" + networkInfoSetting + ", notificationSetting=" + notificationSetting
-                + ", outgoingCallsSetting=" + outgoingCallsSetting + ", packageName=" + packageName
-                + ", simInfoSetting=" + simInfoSetting + ", simSerialNumber=" + simSerialNumber
-                + ", simSerialNumberSetting=" + simSerialNumberSetting + ", smsSetting=" + smsSetting
+                + ", incomingCallsSetting=" + incomingCallsSetting + ", intentBootCompletedSetting="
+                + intentBootCompletedSetting + ", line1Number=" + line1Number + ", line1NumberSetting="
+                + line1NumberSetting + ", locationGpsLat=" + locationGpsLat + ", locationGpsLon=" + locationGpsLon
+                + ", locationGpsSetting=" + locationGpsSetting + ", locationNetworkLat=" + locationNetworkLat
+                + ", locationNetworkLon=" + locationNetworkLon + ", locationNetworkSetting=" + locationNetworkSetting
+                + ", mmsSetting=" + mmsSetting + ", networkInfoSetting=" + networkInfoSetting
+                + ", notificationSetting=" + notificationSetting + ", outgoingCallsSetting=" + outgoingCallsSetting
+                + ", packageName=" + packageName + ", simInfoSetting=" + simInfoSetting + ", simSerialNumber="
+                + simSerialNumber + ", simSerialNumberSetting=" + simSerialNumberSetting + ", smsSetting=" + smsSetting
                 + ", subscriberId=" + subscriberId + ", subscriberIdSetting=" + subscriberIdSetting
                 + ", systemLogsSetting=" + systemLogsSetting + ", uid=" + uid + "]";
     }
@@ -531,15 +519,19 @@ public final class PrivacySettings implements Parcelable {
      */
     
     private String getRandomLat() {
+        BigDecimal latitude;
         double lat = Math.random() * 180;
-        if (lat > 90) return (lat - 90) + "";
-        else return -lat + "";
+        if (lat > 90) latitude = new BigDecimal(lat - 90);
+        else latitude = new BigDecimal(-lat);
+        return latitude.setScale(6, BigDecimal.ROUND_HALF_UP) + "";
     }
     
     private String getRandomLon() {
+        BigDecimal longitude;
         double lon = Math.random() * 360;
-        if (lon > 180) return (lon - 180) + "";
-        else return -lon + "";
+        if (lon > 180) longitude = new BigDecimal(lon - 180);
+        else longitude = new BigDecimal(-lon);
+        return longitude.setScale(6, BigDecimal.ROUND_HALF_UP) + "";
     }
 
     /**
@@ -592,6 +584,7 @@ public final class PrivacySettings implements Parcelable {
         this.bookmarksSetting = in.readByte();
         this.systemLogsSetting = in.readByte();
         this.notificationSetting = in.readByte();
+        this.intentBootCompletedSetting = in.readByte();
 //        this.externalStorageSetting = in.readByte();
 //        this.cameraSetting = in.readByte();
 //        this.recordAudioSetting = in.readByte();
@@ -632,6 +625,7 @@ public final class PrivacySettings implements Parcelable {
         dest.writeByte(bookmarksSetting);
         dest.writeByte(systemLogsSetting);
         dest.writeByte(notificationSetting);
+        dest.writeByte(intentBootCompletedSetting);
 //        dest.writeByte(externalStorageSetting);
 //        dest.writeByte(cameraSetting);
 //        dest.writeByte(recordAudioSetting);

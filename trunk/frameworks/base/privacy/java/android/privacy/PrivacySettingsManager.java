@@ -19,7 +19,7 @@ public class PrivacySettingsManager {
     
     private IPrivacySettingsManager service;
     
-    private static final double VERSION = 1.2;
+    private static final double VERSION = 1.25;
     
     /**
      * @hide - this should be instantiated through Context.getSystemService

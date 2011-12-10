@@ -2,6 +2,7 @@ package android.privacy;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Binder;
 import android.util.Log;
 
 import java.io.File;
@@ -28,8 +29,8 @@ public class PrivacySettingsManagerService extends IPrivacySettingsManager.Stub 
      * @param context
      */
     public PrivacySettingsManagerService(Context context) {
-//        Log.d(TAG, "PrivacySettingsManagerService: initializing for package: " + context.getPackageName() + 
-//                " UID:" + Binder.getCallingUid());
+        Log.i(TAG, "PrivacySettingsManagerService: initializing for package: " + context.getPackageName() + 
+                " UID:" + Binder.getCallingUid());
         this.context = context;
         persistenceAdapter = new PrivacyPersistenceAdapter(context);
         obs = new PrivacyFileObserver("/data/system/privacy", this);
@@ -37,12 +38,14 @@ public class PrivacySettingsManagerService extends IPrivacySettingsManager.Stub 
 
     public PrivacySettings getSettings(String packageName, int uid) {
 //        Log.d(TAG, "getSettings - " + packageName + " UID: " + uid);
-        return persistenceAdapter.getSettings(packageName, uid);
+        return persistenceAdapter.getSettings(packageName, uid, false);
     }
 
     public boolean saveSettings(PrivacySettings settings) {
 //        Log.d(TAG, "saveSettings - checking if caller (UID: " + Binder.getCallingUid() + ") has sufficient permissions");
-        context.enforceCallingPermission(WRITE_PRIVACY_SETTINGS, "Requires WRITE_PRIVACY_SETTINGS");
+        // check permission if not being called by the system process
+        if (Binder.getCallingUid() != 1000) 
+            context.enforceCallingPermission(WRITE_PRIVACY_SETTINGS, "Requires WRITE_PRIVACY_SETTINGS");
 //        Log.d(TAG, "saveSettings - " + settings);
         boolean result = persistenceAdapter.saveSettings(settings);
         if (result == true) obs.addObserver(settings.getPackageName());
@@ -52,7 +55,9 @@ public class PrivacySettingsManagerService extends IPrivacySettingsManager.Stub 
     public boolean deleteSettings(String packageName, int uid) {
 //        Log.d(TAG, "deleteSettings - " + packageName + " UID: " + uid + " " +
 //        		"checking if caller (UID: " + Binder.getCallingUid() + ") has sufficient permissions");
-        context.enforceCallingPermission(WRITE_PRIVACY_SETTINGS, "Requires WRITE_PRIVACY_SETTINGS");
+        // check permission if not being called by the system process
+        if (Binder.getCallingUid() != 1000)
+            context.enforceCallingPermission(WRITE_PRIVACY_SETTINGS, "Requires WRITE_PRIVACY_SETTINGS");
         boolean result = persistenceAdapter.deleteSettings(packageName, uid);
         // update observer if directory exists
         String observePath = PrivacyPersistenceAdapter.SETTINGS_DIRECTORY + "/" + packageName;
