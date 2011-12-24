@@ -19,8 +19,6 @@ public class PrivacySettingsManager {
     
     private IPrivacySettingsManager service;
     
-    private static final double VERSION = 1.25;
-    
     /**
      * @hide - this should be instantiated through Context.getSystemService
      * @param context
@@ -137,7 +135,15 @@ public class PrivacySettingsManager {
     }
     
     public double getVersion() {
-        return VERSION;
+        try {
+            if (service != null) {
+                return service.getVersion();
+            } else {
+                Log.e(TAG, "getVersion - PrivacySettingsManagerService is null");
+            }
+        } catch (RemoteException e) {
+            Log.e(TAG, "RemoteException in getVersion: ", e);
+        }
+        return 0;
     }
-    
 }

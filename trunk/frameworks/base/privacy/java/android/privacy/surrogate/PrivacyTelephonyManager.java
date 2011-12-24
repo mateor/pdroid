@@ -282,28 +282,30 @@ public final class PrivacyTelephonyManager extends TelephonyManager {
         
         /**
          * Replace the incoming phone number with an empty string and pass the call to 
-         * the real phone state listener 
+         * the real phone state listener, if it is still there
          */
         @Override
         public void onCallStateChanged(int state, String incomingNumber) {
-            // only take action if an incoming phone number is actually transmitted
-            if (incomingNumber != null && !incomingNumber.isEmpty()) {
-                PrivacySettings pSet = pSetMan.getSettings(packageName, uid);
-                String output;
-                if (pSet != null && pSet.getIncomingCallsSetting() != PrivacySettings.REAL) {
-                    output = "";
-                    realListener.onCallStateChanged(state, output);
-                    pSetMan.notification(packageName, uid, PrivacySettings.EMPTY, PrivacySettings.DATA_INCOMING_CALL, output, pSet);            
+            if (realListener != null) {
+                // only take action if an incoming phone number is actually transmitted
+                if (incomingNumber != null && !incomingNumber.isEmpty()) {
+                    PrivacySettings pSet = pSetMan.getSettings(packageName, uid);
+                    String output;
+                    if (pSet != null && pSet.getIncomingCallsSetting() != PrivacySettings.REAL) {
+                        output = "";
+                        realListener.onCallStateChanged(state, output);
+                        pSetMan.notification(packageName, uid, PrivacySettings.EMPTY, PrivacySettings.DATA_INCOMING_CALL, output, pSet);
+                    } else {
+                        output = incomingNumber;
+                        realListener.onCallStateChanged(state, incomingNumber);
+                        pSetMan.notification(packageName, uid, PrivacySettings.REAL, PrivacySettings.DATA_INCOMING_CALL, output, pSet);
+                    }
                 } else {
-                    output = incomingNumber;
                     realListener.onCallStateChanged(state, incomingNumber);
-                    pSetMan.notification(packageName, uid, PrivacySettings.REAL, PrivacySettings.DATA_INCOMING_CALL, output, pSet);            
                 }
-            } else {
-                realListener.onCallStateChanged(state, incomingNumber);
+    //            Log.d(TAG, "onCallStateChanged (incoming number) - " + context.getPackageName() + " (" + 
+    //                    Binder.getCallingUid() + ") output: " + output);
             }
-//            Log.d(TAG, "onCallStateChanged (incoming number) - " + context.getPackageName() + " (" + 
-//                    Binder.getCallingUid() + ") output: " + output);
         }
         
         /**

@@ -11,4 +11,5 @@ interface IPrivacySettingsManager
     void registerObservers();
     void addObserver(String packageName);
     boolean purgeSettings();
+    double getVersion();
 }

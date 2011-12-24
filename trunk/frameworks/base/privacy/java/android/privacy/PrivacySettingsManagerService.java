@@ -24,6 +24,8 @@ public class PrivacySettingsManagerService extends IPrivacySettingsManager.Stub 
     
     public static PrivacyFileObserver obs;
     
+    private static final double VERSION = 1.26;    
+    
     /**
      * @hide - this should be instantiated through Context.getSystemService
      * @param context
@@ -67,6 +69,10 @@ public class PrivacySettingsManagerService extends IPrivacySettingsManager.Stub 
             obs.children.remove(observePath);
         }
         return result;
+    }
+    
+    public double getVersion() {
+        return VERSION;
     }
 
     public void notification(final String packageName, final int uid, final byte accessMode, final String dataType, final String output) {
