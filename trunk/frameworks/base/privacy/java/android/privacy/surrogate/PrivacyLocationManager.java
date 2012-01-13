@@ -11,6 +11,8 @@ import android.location.LocationProvider;
 import android.location.GpsStatus.NmeaListener;
 import android.os.Binder;
 import android.os.Looper;
+import android.os.ServiceManager;
+import android.privacy.IPrivacySettingsManager;
 import android.privacy.PrivacySettings;
 import android.privacy.PrivacySettingsManager;
 import android.util.Log;
@@ -34,7 +36,8 @@ public final class PrivacyLocationManager extends LocationManager {
     public PrivacyLocationManager(ILocationManager service, Context context) {
         super(service);
         this.context = context;
-        pSetMan = (PrivacySettingsManager) context.getSystemService("privacy");
+//        pSetMan = (PrivacySettingsManager) context.getSystemService("privacy");
+        pSetMan = new PrivacySettingsManager(context, IPrivacySettingsManager.Stub.asInterface(ServiceManager.getService("privacy")));        
     }
 
     @Override

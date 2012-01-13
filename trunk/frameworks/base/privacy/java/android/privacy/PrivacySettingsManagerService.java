@@ -24,7 +24,7 @@ public class PrivacySettingsManagerService extends IPrivacySettingsManager.Stub 
     
     public static PrivacyFileObserver obs;
     
-    private static final double VERSION = 1.26;    
+    private static final double VERSION = 1.27;    
     
     /**
      * @hide - this should be instantiated through Context.getSystemService

@@ -2,6 +2,8 @@ package android.privacy.surrogate;
 
 import android.content.Context;
 import android.os.Binder;
+import android.os.ServiceManager;
+import android.privacy.IPrivacySettingsManager;
 import android.privacy.PrivacySettings;
 import android.privacy.PrivacySettingsManager;
 import android.telephony.CellLocation;
@@ -30,7 +32,10 @@ public final class PrivacyTelephonyManager extends TelephonyManager {
     public PrivacyTelephonyManager(Context context) {
         super(context);
         this.context = context;
-        pSetMan = (PrivacySettingsManager) context.getSystemService("privacy");
+//        pSetMan = (PrivacySettingsManager) context.getSystemService("privacy");
+        // don't call getSystemService to avoid getting java.lang.IllegalStateException: 
+        // System services not available to Activities before onCreate()
+        pSetMan = new PrivacySettingsManager(context, IPrivacySettingsManager.Stub.asInterface(ServiceManager.getService("privacy")));
     }
     
     /**

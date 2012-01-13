@@ -12,6 +12,8 @@ import android.content.Context;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.ServiceManager;
+import android.privacy.IPrivacySettingsManager;
 import android.privacy.PrivacySettings;
 import android.privacy.PrivacySettingsManager;
 import android.util.Log;
@@ -34,13 +36,15 @@ public final class PrivacyAccountManager extends AccountManager {
     public PrivacyAccountManager(Context context, IAccountManager service) {
         super(context, service);
         this.context = context;
-        pSetMan = (PrivacySettingsManager) context.getSystemService("privacy");  
+//        pSetMan = (PrivacySettingsManager) context.getSystemService("privacy");
+        pSetMan = new PrivacySettingsManager(context, IPrivacySettingsManager.Stub.asInterface(ServiceManager.getService("privacy")));  
     }
 
     public PrivacyAccountManager(Context context, IAccountManager service, Handler handler) {
         super(context, service, handler);
         this.context = context;
-        pSetMan = (PrivacySettingsManager) context.getSystemService("privacy");
+//        pSetMan = (PrivacySettingsManager) context.getSystemService("privacy");
+        pSetMan = new PrivacySettingsManager(context, IPrivacySettingsManager.Stub.asInterface(ServiceManager.getService("privacy")));        
     }
 
     /**
