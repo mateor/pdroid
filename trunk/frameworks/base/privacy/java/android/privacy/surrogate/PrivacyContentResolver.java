@@ -31,6 +31,8 @@ public final class PrivacyContentResolver {
      * @param context
      * @param realCursor
      */
+//    public static Cursor enforcePrivacyPermission(Uri uri, String[] projection,
+//            String selection, String[] selectionArgs, String sortOrder, Context context, Cursor realCursor) {
     public static Cursor enforcePrivacyPermission(Uri uri, Context context, Cursor realCursor) {
         if (uri != null) {
             if (pSetMan == null) pSetMan = (PrivacySettingsManager) context.getSystemService("privacy");
@@ -43,7 +45,6 @@ public final class PrivacyContentResolver {
             if (auth != null) {
                 if (auth.equals(android.provider.Contacts.AUTHORITY) ||
                         auth.equals(ContactsContract.AUTHORITY)) {
-                    
                     if (pSet != null && pSet.getContactsSetting() == PrivacySettings.EMPTY) {
                         output_label = "[empty]";
                         output = new PrivacyCursor();

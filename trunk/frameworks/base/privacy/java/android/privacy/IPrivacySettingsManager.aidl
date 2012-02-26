@@ -12,4 +12,7 @@ interface IPrivacySettingsManager
     void addObserver(String packageName);
     boolean purgeSettings();
     double getVersion();
+    boolean setEnabled(boolean enable);
+    boolean setNotificationsEnabled(boolean enable);
+    void setBootCompleted();
 }

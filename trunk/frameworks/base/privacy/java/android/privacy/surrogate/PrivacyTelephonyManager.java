@@ -1,7 +1,12 @@
 package android.privacy.surrogate;
 
+import com.android.internal.telephony.IPhoneStateListener;
+
 import android.content.Context;
 import android.os.Binder;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.os.ServiceManager;
 import android.privacy.IPrivacySettingsManager;
 import android.privacy.PrivacySettings;
@@ -15,6 +20,7 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -260,119 +266,18 @@ public final class PrivacyTelephonyManager extends TelephonyManager {
 
     @Override
     public void listen(PhoneStateListener listener, int events) {
-        if (((events & PhoneStateListener.LISTEN_CELL_LOCATION) != 0) || 
+        Log.d(TAG, "listen - package:" + context.getPackageName() + " uid:" + Binder.getCallingUid() + " events: " + events);
+        if (((events & PhoneStateListener.LISTEN_CELL_LOCATION) != 0) ||
                 ((events & PhoneStateListener.LISTEN_CALL_STATE) != 0)) {
-            super.listen(new PrivacyPhoneStateListener(listener, context.getPackageName(), 
-                    Binder.getCallingUid()), events);
-//            Log.d(TAG, "listen for cell location or call state - " + context.getPackageName() + " (" + 
-//                    Binder.getCallingUid() + ") output: custom listener");
+            listener.setContext(context);
+            listener.setPackageName(context.getPackageName());
+            listener.setUid(Binder.getCallingUid());
+            super.listen(listener, events);
+            Log.d(TAG, "listen for cell location or call state - " + context.getPackageName() + " (" + 
+                    Binder.getCallingUid() + ") output: custom listener");
         } else {
             super.listen(listener, events);
         }
     }
     
-    private class PrivacyPhoneStateListener extends PhoneStateListener {
-        
-        private PhoneStateListener realListener;
-        
-        private String packageName;
-        
-        private int uid;
-        
-        public PrivacyPhoneStateListener(PhoneStateListener realListener, String packageName, int uid) {
-            this.realListener = realListener;
-            this.packageName = packageName;
-            this.uid = uid;
-        }
-        
-        /**
-         * Replace the incoming phone number with an empty string and pass the call to 
-         * the real phone state listener, if it is still there
-         */
-        @Override
-        public void onCallStateChanged(int state, String incomingNumber) {
-            if (realListener != null) {
-                // only take action if an incoming phone number is actually transmitted
-                if (incomingNumber != null && !incomingNumber.isEmpty()) {
-                    PrivacySettings pSet = pSetMan.getSettings(packageName, uid);
-                    String output;
-                    if (pSet != null && pSet.getIncomingCallsSetting() != PrivacySettings.REAL) {
-                        output = "";
-                        realListener.onCallStateChanged(state, output);
-                        pSetMan.notification(packageName, uid, PrivacySettings.EMPTY, PrivacySettings.DATA_INCOMING_CALL, output, pSet);
-                    } else {
-                        output = incomingNumber;
-                        realListener.onCallStateChanged(state, incomingNumber);
-                        pSetMan.notification(packageName, uid, PrivacySettings.REAL, PrivacySettings.DATA_INCOMING_CALL, output, pSet);
-                    }
-                } else {
-                    realListener.onCallStateChanged(state, incomingNumber);
-                }
-    //            Log.d(TAG, "onCallStateChanged (incoming number) - " + context.getPackageName() + " (" + 
-    //                    Binder.getCallingUid() + ") output: " + output);
-            }
-        }
-        
-        /**
-         * Does not call the real listeners method if network location is restricted
-         * by privacy settings
-         */
-        @Override
-        public void onCellLocationChanged(CellLocation location) {
-            PrivacySettings pSet = pSetMan.getSettings(packageName, uid);
-            String output;
-            if (pSet != null && pSet.getLocationNetworkSetting() != PrivacySettings.REAL) {
-                // simply block the method call, since simulating cell location is not feasible
-                output = "[no output]";
-                pSetMan.notification(packageName, uid, pSet.getLocationNetworkSetting(), PrivacySettings.DATA_LOCATION_NETWORK, null, pSet);            
-            } else { 
-                output = location.toString();
-                realListener.onCellLocationChanged(location);
-                pSetMan.notification(packageName, uid, PrivacySettings.REAL, PrivacySettings.DATA_LOCATION_NETWORK, null, pSet);            
-            }
-//            Log.d(TAG, "onCellLocationChanged - " + context.getPackageName() + " (" + 
-//                    Binder.getCallingUid() + ") output: " + output);
-        }
-
-        @Override
-        public void onCallForwardingIndicatorChanged(boolean cfi) {
-            realListener.onCallForwardingIndicatorChanged(cfi);
-        }
-
-        @Override
-        public void onDataActivity(int direction) {
-            realListener.onDataActivity(direction);
-        }
-
-        @Override
-        public void onDataConnectionStateChanged(int state, int networkType) {
-            realListener.onDataConnectionStateChanged(state, networkType);
-        }
-
-        @Override
-        public void onDataConnectionStateChanged(int state) {
-            realListener.onDataConnectionStateChanged(state);
-        }
-
-        @Override
-        public void onMessageWaitingIndicatorChanged(boolean mwi) {
-            realListener.onMessageWaitingIndicatorChanged(mwi);
-        }
-
-        @Override
-        public void onServiceStateChanged(ServiceState serviceState) {
-            realListener.onServiceStateChanged(serviceState);
-        }
-
-        @Override
-        public void onSignalStrengthChanged(int asu) {
-            realListener.onSignalStrengthChanged(asu);
-        }
-
-        @Override
-        public void onSignalStrengthsChanged(SignalStrength signalStrength) {
-            realListener.onSignalStrengthsChanged(signalStrength);
-        }
-        
-    }
 }

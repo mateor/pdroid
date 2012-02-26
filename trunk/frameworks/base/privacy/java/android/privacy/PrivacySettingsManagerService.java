@@ -11,12 +11,14 @@ import java.io.File;
  * PrivacySettingsManager's counterpart running in the system process, which
  * allows write access to /data/
  * @author Anonymous
+ * TODO: add ON/OFF API (allow notifications only after boot, if ON flag in database)
+ * TODO: add selective contact access management API
  */
 public class PrivacySettingsManagerService extends IPrivacySettingsManager.Stub {
 
     private static final String TAG = "PrivacySettingsManagerService";
     
-    private static final String WRITE_PRIVACY_SETTINGS = "android.privacy.WRITE_PRIVACY_SETTINGS"; 
+    private static final String WRITE_PRIVACY_SETTINGS = "android.privacy.WRITE_PRIVACY_SETTINGS";
 
     private PrivacyPersistenceAdapter persistenceAdapter;
 
@@ -24,7 +26,12 @@ public class PrivacySettingsManagerService extends IPrivacySettingsManager.Stub 
     
     public static PrivacyFileObserver obs;
     
-    private static final double VERSION = 1.27;    
+    // TODO: set true if enabled, else false
+    private boolean enabled;
+    private boolean notificationsEnabled;
+    private boolean bootCompleted;
+    
+    private static final double VERSION = 1.31;
     
     /**
      * @hide - this should be instantiated through Context.getSystemService
@@ -36,11 +43,17 @@ public class PrivacySettingsManagerService extends IPrivacySettingsManager.Stub 
         this.context = context;
         persistenceAdapter = new PrivacyPersistenceAdapter(context);
         obs = new PrivacyFileObserver("/data/system/privacy", this);
+        
+        enabled = persistenceAdapter.getValue(PrivacyPersistenceAdapter.SETTING_ENABLED).equals(PrivacyPersistenceAdapter.VALUE_TRUE);
+        notificationsEnabled = persistenceAdapter.getValue(PrivacyPersistenceAdapter.SETTING_NOTIFICATIONS_ENABLED).equals(PrivacyPersistenceAdapter.VALUE_TRUE);
+        bootCompleted = false;
     }
 
     public PrivacySettings getSettings(String packageName, int uid) {
 //        Log.d(TAG, "getSettings - " + packageName + " UID: " + uid);
-        return persistenceAdapter.getSettings(packageName, uid, false);
+        if (enabled || context.getPackageName().equals("com.privacy.pdroid")) 
+            return persistenceAdapter.getSettings(packageName, uid, false);
+        else return null;
     }
 
     public boolean saveSettings(PrivacySettings settings) {
@@ -76,14 +89,16 @@ public class PrivacySettingsManagerService extends IPrivacySettingsManager.Stub 
     }
 
     public void notification(final String packageName, final int uid, final byte accessMode, final String dataType, final String output) {
-        Intent intent = new Intent();
-        intent.setAction(PrivacySettingsManager.ACTION_PRIVACY_NOTIFICATION);
-        intent.putExtra("packageName", packageName);
-        intent.putExtra("uid", uid);
-        intent.putExtra("accessMode", accessMode);
-        intent.putExtra("dataType", dataType);
-        intent.putExtra("output", output);
-        context.sendBroadcast(intent);
+        if (bootCompleted && notificationsEnabled) {
+            Intent intent = new Intent();
+            intent.setAction(PrivacySettingsManager.ACTION_PRIVACY_NOTIFICATION);
+            intent.putExtra("packageName", packageName);
+            intent.putExtra("uid", uid);
+            intent.putExtra("accessMode", accessMode);
+            intent.putExtra("dataType", dataType);
+            intent.putExtra("output", output);
+            context.sendBroadcast(intent);
+        }
     }
     
     public void registerObservers() {
@@ -98,5 +113,30 @@ public class PrivacySettingsManagerService extends IPrivacySettingsManager.Stub 
     
     public boolean purgeSettings() {
         return persistenceAdapter.purgeSettings();
+    }
+    
+    public void setBootCompleted() {
+        bootCompleted = true;
+    }
+    
+    public boolean setNotificationsEnabled(boolean enable) {
+        String value = enable ? PrivacyPersistenceAdapter.VALUE_TRUE : PrivacyPersistenceAdapter.VALUE_FALSE;
+        if (persistenceAdapter.setValue(PrivacyPersistenceAdapter.SETTING_NOTIFICATIONS_ENABLED, value)) {
+            this.notificationsEnabled = true;
+            this.bootCompleted = true;
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    public boolean setEnabled(boolean enable) {
+        String value = enable ? PrivacyPersistenceAdapter.VALUE_TRUE : PrivacyPersistenceAdapter.VALUE_FALSE;
+        if (persistenceAdapter.setValue(PrivacyPersistenceAdapter.SETTING_ENABLED, value)) {
+            this.enabled = true;
+            return true;
+        } else {
+            return false;
+        }
     }
 }

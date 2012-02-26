@@ -2,8 +2,10 @@ package android.privacy;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -123,6 +125,8 @@ public final class PrivacySettings implements Parcelable {
 //    private byte externalStorageSetting;
 //    private byte cameraSetting;
 //    private byte recordAudioSetting;
+    
+    private int[] allowedContacts;
 
     public PrivacySettings(Integer _id, String packageName, int uid) {
         this._id = _id;
@@ -162,6 +166,7 @@ public final class PrivacySettings implements Parcelable {
 //        this.externalStorageSetting = REAL;
 //        this.cameraSetting = REAL;
 //        this.recordAudioSetting = REAL;
+        this.allowedContacts = null;
     }
     
     public PrivacySettings(Integer id, String packageName, int uid, byte deviceIdSetting, String deviceId,
@@ -172,7 +177,7 @@ public final class PrivacySettings implements Parcelable {
             byte accountsAuthTokensSetting, byte outgoingCallsSetting, byte incomingCallsSetting, byte contactsSetting,
             byte calendarSetting, byte mmsSetting, byte smsSetting, byte callLogSetting, byte bookmarksSetting, 
             byte systemLogsSetting, byte externalStorageSetting, byte cameraSetting, byte recordAudioSetting, 
-            byte notificationSetting, byte intentBootCompletedSetting) {
+            byte notificationSetting, byte intentBootCompletedSetting, int[] allowedContacts) {
         this._id = id;
         
         this.packageName = packageName;
@@ -209,7 +214,8 @@ public final class PrivacySettings implements Parcelable {
         this.intentBootCompletedSetting = intentBootCompletedSetting;
 //        this.externalStorageSetting = externalStorageSetting;
 //        this.cameraSetting = cameraSetting;
-//        this.recordAudioSetting = recordAudioSetting;        
+//        this.recordAudioSetting = recordAudioSetting;
+        this.allowedContacts = allowedContacts;
     }
 
     public Integer get_id() {
@@ -494,6 +500,14 @@ public final class PrivacySettings implements Parcelable {
     public void setNotificationSetting(byte notificationSetting) {
         this.notificationSetting = notificationSetting;
     }
+    
+    public int[] getAllowedContacts() {
+        return allowedContacts;
+    }
+
+    public void setAllowedContacts(int[] allowedContacts) {
+        this.allowedContacts = allowedContacts;
+    }
 
     @Override
     public String toString() {
@@ -588,6 +602,12 @@ public final class PrivacySettings implements Parcelable {
 //        this.externalStorageSetting = in.readByte();
 //        this.cameraSetting = in.readByte();
 //        this.recordAudioSetting = in.readByte();
+        int[] buffer = new int[in.dataAvail()];
+        in.readIntArray(buffer);
+        int count = 0;
+        for (int i = 0; i < buffer.length; i++) if (buffer[i] != 0) count++; else break;
+        this.allowedContacts = new int[count];
+        System.arraycopy(buffer, 0, allowedContacts, 0, count);
     }
     
     @Override
@@ -629,6 +649,7 @@ public final class PrivacySettings implements Parcelable {
 //        dest.writeByte(externalStorageSetting);
 //        dest.writeByte(cameraSetting);
 //        dest.writeByte(recordAudioSetting);
+        dest.writeIntArray(allowedContacts);
     }
     
     @Override

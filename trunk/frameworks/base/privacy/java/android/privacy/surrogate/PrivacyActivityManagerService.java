@@ -36,7 +36,6 @@ public final class PrivacyActivityManagerService {
     private static int tmpMmsReceivers = 0;
     
     private static long tmpPackageAddedHash = 0;
-    private static int tmpPackageAddedReceivers = 0;
     
     /**
      * Intercepts broadcasts and replaces the broadcast contents according to 
@@ -228,16 +227,16 @@ public final class PrivacyActivityManagerService {
             }
             
 //            Log.d(TAG, "broadcasting intent " + action + " - " + packageName + " (" + uid + ") output: " + output);
-//        } else if (action.equals(Intent.ACTION_BOOT_COMPLETED)) {
-//            pSet = pSetMan.getSettings(packageName, uid);
-//            
+        } else if (action.equals(Intent.ACTION_BOOT_COMPLETED)) {
+            pSetMan.setBootCompleted();
+            
 //            if (pSet != null && pSet.getIntentBootCompletedSetting() != PrivacySettings.REAL) {
-//                // no notification since all applications will receive this -> spam
+                // no notification since all applications will receive this -> spam
 //                intent.setAction("empty");
-////                pSetMan.notification(packageName, uid, PrivacySettings.EMPTY, PrivacySettings.DATA_INTENT_BOOT_COMPLETED, null, pSet);
+//                pSetMan.notification(packageName, uid, PrivacySettings.EMPTY, PrivacySettings.DATA_INTENT_BOOT_COMPLETED, null, pSet);
 //            } else {
 //                intent.setAction(Intent.ACTION_BOOT_COMPLETED);
-////                pSetMan.notification(packageName, uid, PrivacySettings.REAL, PrivacySettings.DATA_INTENT_BOOT_COMPLETED, null, pSet);
+//                pSetMan.notification(packageName, uid, PrivacySettings.REAL, PrivacySettings.DATA_INTENT_BOOT_COMPLETED, null, pSet);
 //            }
         } else if (action.equals(Intent.ACTION_PACKAGE_ADDED)) {
 //            Log.d(TAG, "enforcePrivacyPermission - ACTION_PACKAGE_ADDED; receivers: " + receivers);
@@ -252,10 +251,10 @@ public final class PrivacyActivityManagerService {
                 pSet = pSetMan.getSettings(addedPackageName, addedUid);
                 // the settings in the privacy DB contain a different UID
                 if (pSet != null && pSet.getUid() != addedUid) { // update the UID
-                    Log.i(TAG, "installed package UID (" + addedUid + ") doesn't match privacy settings UID (" + pSet.getUid() + "); updating...");
+//                    Log.i(TAG, "installed package UID (" + addedUid + ") doesn't match privacy settings UID (" + pSet.getUid() + "); updating...");
                     pSet.setUid(addedUid);
-                    boolean updateSuccess = pSetMan.saveSettings(pSet);
-                    if (!updateSuccess) Log.w(TAG, "could not update privacy settings UID; purge needed");
+                    /*boolean updateSuccess = */pSetMan.saveSettings(pSet);
+//                    if (!updateSuccess) Log.w(TAG, "could not update privacy settings UID; purge needed");
                 }
             }
         }

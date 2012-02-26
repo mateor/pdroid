@@ -551,10 +551,10 @@ class ServerThread extends Thread {
     // BEGIN privacy-added
     private void addPrivacyService(Context context) {
         try {
-            Slog.i(TAG, "Privacy Service");
+            Log.i(TAG, "Privacy Service");
             ServiceManager.addService("privacy", new PrivacySettingsManagerService(context));
         } catch (Throwable e) {
-            Slog.e(TAG, "Failure starting Privacy Service", e);
+            Log.e(TAG, "Failure starting Privacy Service", e);
         }        
     }
     // END privacy-added

@@ -1,15 +1,13 @@
 package android.privacy;
 
 import android.content.Context;
-import android.content.Intent;
-import android.database.sqlite.SQLiteDebug.DbStats;
-import android.os.Binder;
 import android.os.RemoteException;
 import android.util.Log;
 
 /**
  * Provides API access to the privacy settings
  * @author Anonymous
+ * TODO: selective contacts access
  */
 public class PrivacySettingsManager {
 
@@ -145,5 +143,43 @@ public class PrivacySettingsManager {
             Log.e(TAG, "RemoteException in getVersion: ", e);
         }
         return 0;
+    }
+    
+    public boolean setEnabled(boolean enable) {
+        try {
+            if (service != null) {
+                return service.setEnabled(enable);
+            } else {
+                Log.e(TAG, "setEnabled - PrivacySettingsManagerService is null");
+            }
+        } catch (RemoteException e) {
+            Log.e(TAG, "RemoteException in setEnabled: ", e);
+        }
+        return false;
+    }
+    
+    public boolean setNotificationsEnabled(boolean enable) {
+        try {
+            if (service != null) {
+                return service.setNotificationsEnabled(enable);
+            } else {
+                Log.e(TAG, "setNotificationsEnabled - PrivacySettingsManagerService is null");
+            }
+        } catch (RemoteException e) {
+            Log.e(TAG, "RemoteException in setNotificationsEnabled: ", e);
+        }
+        return false;
+    }
+    
+    public void setBootCompleted() {
+        try {
+            if (service != null) {
+                service.setBootCompleted();
+            } else {
+                Log.e(TAG, "setBootCompleted - PrivacySettingsManagerService is null");
+            }
+        } catch (RemoteException e) {
+            Log.e(TAG, "RemoteException in setBootCompleted: ", e);
+        }
     }
 }
