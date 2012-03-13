@@ -602,12 +602,16 @@ public final class PrivacySettings implements Parcelable {
 //        this.externalStorageSetting = in.readByte();
 //        this.cameraSetting = in.readByte();
 //        this.recordAudioSetting = in.readByte();
-        int[] buffer = new int[in.dataAvail()];
-        in.readIntArray(buffer);
-        int count = 0;
-        for (int i = 0; i < buffer.length; i++) if (buffer[i] != 0) count++; else break;
-        this.allowedContacts = new int[count];
-        System.arraycopy(buffer, 0, allowedContacts, 0, count);
+//        int[] buffer = in.createIntArray();
+//        if (buffer != null && buffer.length > 0) {
+//            in.readIntArray(buffer);
+//            int count = 0;
+//            for (int i = 0; i < buffer.length; i++) if (buffer[i] != 0) count++; else break;
+//            this.allowedContacts = new int[count];
+//            System.arraycopy(buffer, 0, allowedContacts, 0, count);
+//        } // else it will be null
+        
+        this.allowedContacts = in.createIntArray();
     }
     
     @Override

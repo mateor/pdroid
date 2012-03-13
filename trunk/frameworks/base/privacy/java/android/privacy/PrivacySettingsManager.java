@@ -28,10 +28,14 @@ public class PrivacySettingsManager {
     }
 
     public PrivacySettings getSettings(String packageName, int uid) {
+        return getSettings(packageName);
+    }
+    
+    public PrivacySettings getSettings(String packageName) {
         try {
 //            Log.d(TAG, "getSettings for package: " + packageName + " UID: " + uid);
             if (service != null) {
-                return service.getSettings(packageName, uid);
+                return service.getSettings(packageName);
             } else {
                 Log.e(TAG, "getSettings - PrivacySettingsManagerService is null");
                 return null;
@@ -57,11 +61,15 @@ public class PrivacySettingsManager {
         }
     }
     
+    public boolean deleteSettings(String packageName) {
+        return deleteSettings(packageName);
+    }
+    
     public boolean deleteSettings(String packageName, int uid) {
         try {
 //            Log.d(TAG, "deleteSettings - "  + packageName + " UID: " + uid);
             if (service != null) {
-                return service.deleteSettings(packageName, uid);
+                return service.deleteSettings(packageName);
             } else {
                 Log.e(TAG, "deleteSettings - PrivacySettingsManagerService is null");
                 return false;
@@ -82,10 +90,14 @@ public class PrivacySettingsManager {
     }
     
     public void notification(String packageName, int uid, byte accessMode, String dataType, String output, PrivacySettings pSet) {
+        notification(packageName, accessMode, dataType, output, pSet);
+    }
+    
+    public void notification(String packageName, byte accessMode, String dataType, String output, PrivacySettings pSet) {
 //        if (pSet != null && pSet.getNotificationSetting() == PrivacySettings.SETTING_NOTIFY_ON) {
             try {
                 if (service != null) {
-                    service.notification(packageName, uid, accessMode, dataType, output);
+                    service.notification(packageName, accessMode, dataType, output);
                 } else {
                     Log.e(TAG, "deleteSettings - PrivacySettingsManagerService is null");
                 }            
@@ -101,7 +113,7 @@ public class PrivacySettingsManager {
                 service.registerObservers();
             } else {
                 Log.e(TAG, "deleteSettings - PrivacySettingsManagerService is null");
-            }            
+            }
         } catch (RemoteException e) {
             Log.e(TAG, "RemoteException in registerObservers: ", e);
         }

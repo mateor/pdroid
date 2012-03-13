@@ -14,14 +14,12 @@
 	<classpathentry kind="src" path="packages/apps/Launcher2/src"/>
 	<classpathentry kind="src" path="packages/apps/Mms/src"/>
 	<classpathentry kind="src" path="packages/apps/PackageInstaller/src"/>
-	<classpathentry kind="src" path="packages/apps/PDroid/src"/>
 	<classpathentry kind="src" path="packages/apps/Phone/src"/>
 	<classpathentry kind="src" path="packages/apps/QuickSearchBox/src"/>
 	<classpathentry kind="src" path="packages/apps/Settings/src"/>
 	<classpathentry kind="src" path="packages/apps/SoundRecorder/src"/>
 	<classpathentry kind="src" path="packages/apps/Stk/src"/>
 	<classpathentry kind="src" path="packages/apps/Tag/src"/>
-	<classpathentry kind="src" path="packages/apps/TesterApp1/src"/>
 	<classpathentry kind="src" path="packages/apps/VoiceDialer/src"/>
 	<classpathentry kind="src" path="packages/providers/CalendarProvider/src"/>
 	<classpathentry kind="src" path="packages/providers/ContactsProvider/src"/>

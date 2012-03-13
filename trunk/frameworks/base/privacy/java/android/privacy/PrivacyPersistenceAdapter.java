@@ -16,7 +16,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -33,6 +32,8 @@ public class PrivacyPersistenceAdapter {
     
     private static final int DATABASE_VERSION = 3;
     
+    public static final int DUMMY_UID = -1;
+    
     /**
      * Number of threads currently reading the database
      */
@@ -45,17 +46,11 @@ public class PrivacyPersistenceAdapter {
 
     private static final String TABLE_SETTINGS = "settings";
     
-    // TODO: insert "enabled" = true by default and allow switching on/off
-    // TODO: add "notifications_enabled", which is only enabled after boot completes
     private static final String TABLE_MAP = "map";
     
     private static final String TABLE_ALLOWED_CONTACTS = "allowed_contacts";
     
-    // TODO: remove this
     private static final String TABLE_VERSION = "version";
-    
-    
-    private static final String COLUMN_VERSION_NAME = "version";
     
     private static final String CREATE_TABLE_SETTINGS = 
         "CREATE TABLE IF NOT EXISTS " + TABLE_SETTINGS + " ( " + 
@@ -95,9 +90,6 @@ public class PrivacyPersistenceAdapter {
         " notificationSetting INTEGER, " + 
         " intentBootCompletedSetting INTEGER" + 
         ");";
-    
-    private static final String CREATE_TABLE_VERSION = 
-        "CREATE TABLE IF NOT EXISTS " + TABLE_VERSION + " ( _id INTEGER PRIMARY KEY, version INTEGER );";
     
     private static final String CREATE_TABLE_MAP = 
         "CREATE TABLE IF NOT EXISTS " + TABLE_MAP + " ( name TEXT PRIMARY KEY, value TEXT );";
@@ -180,12 +172,32 @@ public class PrivacyPersistenceAdapter {
                 try {
                     if (db != null && db.isOpen()) {
 //                        db.execSQL("ALTER TABLE " + TABLE_SETTINGS + " ADD COLUMN intentBootCompletedSetting INTEGER;");
-                        db.execSQL("DROP TABLE " + TABLE_VERSION + ";");
+                        db.execSQL("DROP TABLE IF EXISTS " + TABLE_VERSION + ";");
                         db.execSQL(CREATE_TABLE_ALLOWED_CONTACTS); 
                         db.execSQL(CREATE_TABLE_MAP);
                         db.execSQL(INSERT_VERSION);
                         db.execSQL(INSERT_ENABLED);
                         db.execSQL(INSERT_NOTIFICATIONS_ENABLED);
+                        
+                        // remove uid dirs from the settings directory
+                        File settingsDir = new File(SETTINGS_DIRECTORY);
+                        for (File packageDir : settingsDir.listFiles()) {
+                            for (File uidDir : packageDir.listFiles()) {
+                                if (uidDir.isDirectory()) {
+                                    File[] settingsFiles = uidDir.listFiles();
+                                    // copy the first found (most likely the only one) one level up
+                                    if (settingsFiles[0] != null) {
+                                        File newPath = new File(packageDir + "/" + settingsFiles[0].getName());
+                                        newPath.delete();
+                                        settingsFiles[0].renameTo(newPath);
+                                        deleteRecursive(uidDir);
+                                    }
+                                }
+                            }
+                        }
+                        
+                        purgeSettings();
+                        
                         db.setTransactionSuccessful();
                     }
                 } catch (Exception e) {
@@ -259,11 +271,11 @@ public class PrivacyPersistenceAdapter {
         values.put("value", value);
         SQLiteDatabase db = getWritableDatabase();
         boolean success = db.replace(TABLE_MAP, null, values) != -1;
-        if (db != null && db.isOpen()) db.close();
+        if (readingThreads == 0 && db != null && db.isOpen()) db.close();
         return success;
     }
     
-    public PrivacySettings getSettings(String packageName, int uid, boolean forceCloseDB) {
+    public PrivacySettings getSettings(String packageName, boolean forceCloseDB) {
         PrivacySettings s = null;
         
         if (packageName == null) {
@@ -273,7 +285,7 @@ public class PrivacyPersistenceAdapter {
         
         // indicate that the DB is being read to prevent closing by other threads
         readingThreads++;
-//        Log.d(TAG, "getSettings - settings request for package: " + packageName + " UID: " + uid + " readingThreads: " + readingThreads);
+//        Log.d(TAG, "getSettings - settings request for package: " + packageName + " readingThreads: " + readingThreads);
         
         SQLiteDatabase db;
         try {
@@ -287,65 +299,51 @@ public class PrivacyPersistenceAdapter {
         Cursor c = null;
 
         try {
-            // try to get settings based on package name only first; some system applications
-            // (e.g., HTC Settings) run with a different UID than reported by package manager
             c = query(db, TABLE_SETTINGS, DATABASE_FIELDS, "packageName=?", new String[] { packageName }, null, null, null, null);
 
-            if (c != null) {
-                if (c.getCount() > 1) {
-                    // if we get multiple entries, try using UID as well; not guaranteed to find existing
-                    // settings for system applications (see above comment) but this is rather rare
-//                    Log.d(TAG, "getSettings - multiple settings entries found for package name: " + packageName
-//                            + "; trying with UID: " + uid);
-                    
-                    c.close();
-                    c = query(db, TABLE_SETTINGS, DATABASE_FIELDS, 
-                            "packageName=? AND uid=?", new String[] { packageName, uid + "" }, null, null, null, null);
+            if (c != null && c.moveToFirst()) {
+                s = new PrivacySettings(c.getInt(0), c.getString(1), c.getInt(2), (byte)c.getShort(3), c.getString(4), 
+                        (byte)c.getShort(5), c.getString(6), (byte)c.getShort(7), c.getString(8), c.getString(9), (byte)c.getShort(10), 
+                        c.getString(11), c.getString(12), (byte)c.getShort(13), (byte)c.getShort(14), (byte)c.getShort(15), 
+                        c.getString(16), (byte)c.getShort(17), c.getString(18), (byte)c.getShort(19), (byte)c.getShort(20), 
+                        (byte)c.getShort(21), (byte)c.getShort(22), (byte)c.getShort(23), (byte)c.getShort(24), (byte)c.getShort(25), 
+                        (byte)c.getShort(26), (byte)c.getShort(27), (byte)c.getShort(28), (byte)c.getShort(29), (byte)c.getShort(30), 
+                        (byte)c.getShort(31), (byte)c.getShort(32), (byte)c.getShort(33), (byte)c.getShort(34), null);
+                
+                // get allowed contacts IDs if necessary
+//                Log.d(TAG, "getSettings - looking for allowed contacts for " + s.get_id());
+//                c = query(db, TABLE_ALLOWED_CONTACTS, null, 
+//                        "settings_id=?", new String[] { Integer.toString(s.get_id()) }, null, null, null, null);
+                c = db.rawQuery("SELECT * FROM allowed_contacts WHERE settings_id=" + Integer.toString(s.get_id()) + ";", null);
+                
+                if (c != null && c.getCount() > 0) {
+//                    Log.d(TAG, "getSettings - found allowed contacts");
+                    int[] allowedContacts = new int[c.getCount()];
+                    while (c.moveToNext()) allowedContacts[c.getPosition()] = c.getInt(1);
+                    s.setAllowedContacts(allowedContacts);
                 }
-                if (c.getCount() == 1 && c.moveToFirst()) {
-                    s = new PrivacySettings(c.getInt(0), c.getString(1), c.getInt(2), (byte)c.getShort(3), c.getString(4), 
-                            (byte)c.getShort(5), c.getString(6), (byte)c.getShort(7), c.getString(8), c.getString(9), (byte)c.getShort(10), 
-                            c.getString(11), c.getString(12), (byte)c.getShort(13), (byte)c.getShort(14), (byte)c.getShort(15), 
-                            c.getString(16), (byte)c.getShort(17), c.getString(18), (byte)c.getShort(19), (byte)c.getShort(20), 
-                            (byte)c.getShort(21), (byte)c.getShort(22), (byte)c.getShort(23), (byte)c.getShort(24), (byte)c.getShort(25), 
-                            (byte)c.getShort(26), (byte)c.getShort(27), (byte)c.getShort(28), (byte)c.getShort(29), (byte)c.getShort(30), 
-                            (byte)c.getShort(31), (byte)c.getShort(32), (byte)c.getShort(33), (byte)c.getShort(34), null);
-                    
-                    // get allowed contacts IDs if necessary
-                    if (s.getContactsSetting() == PrivacySettings.CUSTOM) {
-                        c = query(db, TABLE_ALLOWED_CONTACTS, null, 
-                                "settings_id=?", new String[] { s.get_id() + "" }, null, null, null, null);
-                        if (c != null && c.getCount() > 0) {
-                            int[] allowedContacts = new int[c.getCount()];
-                            while (c.moveToNext()) allowedContacts[c.getPosition()] = c.getInt(1);
-                            s.setAllowedContacts(allowedContacts);
-                        }
-                    }
 //                    Log.d(TAG, "getSettings - found settings entry for package: " + packageName + " UID: " + uid);
-                } else if (c.getCount() > 1) {
-                    // multiple settings entries have same package name AND UID; this should NEVER happen
-                    Log.e(TAG, "getSettings - duplicate entries in the privacy.db");
-                    // if it does happen, null will be returned, since we cannot be sure what setting to use
-                }
-            } else {
-//                Log.d(TAG, "getSettings - no settings found for package: " + packageName + " UID: " + uid);
-            }
+            } 
+//            else {
+//                Log.e(TAG, "getSettings - no settings found for package: " + packageName);
+//            }
         } catch (Exception e) {
-            Log.e(TAG, "getSettings - failed to get settings for package: " + packageName + " UID: " + uid, e);
+            Log.e(TAG, "getSettings - failed to get settings for package: " + packageName, e);
             e.printStackTrace();
+            if (c != null) c.close();
         } finally {
             if (c != null) c.close();
-            if (forceCloseDB && db != null && db.isOpen()) {
-                db.close();
-            } else {
-                synchronized (readingThreads) {
-                    readingThreads--;
-                    // only close DB if no other threads are reading
-                    if (readingThreads == 0 && db != null && db.isOpen()) {
-                        db.close();
-                    }
+//            if (forceCloseDB && db != null && db.isOpen()) {
+//                db.close();
+//            } else {
+            synchronized (readingThreads) {
+                readingThreads--;
+                // only close DB if no other threads are reading
+                if (readingThreads == 0 && db != null && db.isOpen()) {
+                    db.close();
                 }
             }
+//            }
         }
         
 //        Log.d(TAG, "getSettings - returning settings: " + s);
@@ -362,17 +360,18 @@ public class PrivacyPersistenceAdapter {
     public synchronized boolean saveSettings(PrivacySettings s) {
         boolean result = true;
         String packageName = s.getPackageName();
-        Integer uid = s.getUid();
+//        Integer uid = s.getUid();
 //        Log.d(TAG, "saveSettings - settings save request : " + s);
         
-        if (packageName == null || packageName.isEmpty() || uid == null) {
+        if (packageName == null || packageName.isEmpty()/* || uid == null*/) {
             Log.e(TAG, "saveSettings - either package name, UID or both is missing");
             return false;
         }
 
         ContentValues values = new ContentValues();
         values.put("packageName", packageName);
-        values.put("uid", uid);
+//        values.put("uid", uid);
+        values.put("uid", DUMMY_UID);
         
         values.put("deviceIdSetting", s.getDeviceIdSetting());
         values.put("deviceId", s.getDeviceId());
@@ -414,6 +413,7 @@ public class PrivacyPersistenceAdapter {
 //        values.put("cameraSetting", s.getCameraSetting());
 //        values.put("recordAudioSetting", s.getRecordAudioSetting());
         
+        readingThreads++;
         SQLiteDatabase db = getWritableDatabase();
         db.beginTransaction(); // make sure this ends up in a consistent state (DB and plain text files)
         Cursor c = null;
@@ -422,8 +422,7 @@ public class PrivacyPersistenceAdapter {
 //            Log.d(TAG, "saveSettings - checking if entry exists already");
             Integer id = s.get_id();
             if (id != null) { // existing entry -> update
-
-                Log.d(TAG, "saveSettings - updating existing entry");
+//                Log.d(TAG, "saveSettings - updating existing entry");
                 if (db.update(TABLE_SETTINGS, values, "_id=?", new String[] { id.toString() }) < 1) {
                     throw new Exception("saveSettings - failed to update database entry");
                 }
@@ -441,17 +440,16 @@ public class PrivacyPersistenceAdapter {
                 }
 
             } else { // new entry -> insert if no duplicates exist
-
 //                Log.d(TAG, "saveSettings - new entry; verifying if duplicates exist");
-                c = db.query(TABLE_SETTINGS, new String[] { "_id" }, "packageName=? AND uid=?", 
-                        new String[] { s.getPackageName(), s.getUid() + "" }, null, null, null);
+                c = db.query(TABLE_SETTINGS, new String[] { "_id" }, "packageName=?", 
+                        new String[] { s.getPackageName() }, null, null, null);
                 
                 if (c != null) {
                     if (c.getCount() == 1) { // exactly one entry
                         // exists -> update
 //                        Log.d(TAG, "saveSettings - updating existing entry");
-                        if (db.update(TABLE_SETTINGS, values, "packageName=? AND uid=?", 
-                                new String[] { s.getPackageName(), s.getUid() + "" }) < 1) {
+                        if (db.update(TABLE_SETTINGS, values, "packageName=?", 
+                                new String[] { s.getPackageName() }) < 1) {
                             throw new Exception("saveSettings - failed to update database entry");
                         }
                         
@@ -500,17 +498,17 @@ public class PrivacyPersistenceAdapter {
             
             // save settings to plain text file (for access from core libraries)
 //            Log.d(TAG, "saveSettings - saving to plain text file");
-            File settingsUidDir = new File("/data/system/privacy/" + packageName + "/" + uid + "/");
+//            File settingsUidDir = new File("/data/system/privacy/" + packageName + "/" + uid + "/");
             File settingsPackageDir = new File("/data/system/privacy/" + packageName + "/");
-            File systemLogsSettingFile = new File("/data/system/privacy/" + packageName + "/" + 
-                    uid + "/systemLogsSetting");
+            File systemLogsSettingFile = new File("/data/system/privacy/" + packageName + "/" + "/systemLogsSetting");
             try {
                 // create all parent directories on the file path
-                settingsUidDir.mkdirs();
+//                settingsUidDir.mkdirs();
                 // make the directory readable (requires it to be executable as well)
-                settingsUidDir.setReadable(true, false);
-                settingsUidDir.setExecutable(true, false);
+//                settingsUidDir.setReadable(true, false);
+//                settingsUidDir.setExecutable(true, false);
                 // make the parent directory readable (requires it to be executable as well)
+                settingsPackageDir.mkdirs();
                 settingsPackageDir.setReadable(true, false);
                 settingsPackageDir.setExecutable(true, false);
                 // create the setting files and make them readable
@@ -525,7 +523,7 @@ public class PrivacyPersistenceAdapter {
             } catch (IOException e) {
                 result = false;
                 // jump to catch block to avoid marking transaction as successful
-                throw new Exception("saveSettings - could not write settings to file", e); 
+                throw new Exception("saveSettings - could not write settings to file", e);
             }
             // mark DB transaction successful (commit the changes)
             db.setTransactionSuccessful();
@@ -535,9 +533,14 @@ public class PrivacyPersistenceAdapter {
 //            Log.d(TAG, "saveSettings - could not save settings", e);
         } finally {
             db.endTransaction();
-//            Log.d(TAG, "saveSettings - ending transaction");
             if (c != null) c.close();
-            if (db != null && db.isOpen()) db.close();
+            synchronized (readingThreads) {
+                readingThreads--;
+                // only close DB if no other threads are reading
+                if (readingThreads == 0 && db != null && db.isOpen()) {
+                    db.close();
+                }
+            }
         }
 
         return result;
@@ -546,9 +549,8 @@ public class PrivacyPersistenceAdapter {
     /**
      * Deletes a settings entry from the DB
      * @return true if settings were deleted successfully, false otherwise
-     * TODO: delete allowed contacts IDs
      */
-    public synchronized boolean deleteSettings(String packageName, int uid) {
+    public synchronized boolean deleteSettings(String packageName) {
         boolean result = true;
         
         SQLiteDatabase db = getWritableDatabase();
@@ -556,29 +558,27 @@ public class PrivacyPersistenceAdapter {
         try {
 //            Log.d(TAG, "deleteSettings - deleting database entry for " + packageName + " (" + uid + ")");
             // try deleting contacts allowed entries; do not fail if deletion not possible
-            // TODO: move to packageName-only identifier -> delete main entry only if the select returns a result
-            Cursor c = db.query(TABLE_SETTINGS, new String[] { "_id" }, "packageName=? AND uid=?", 
-                    new String[] { packageName, Integer.toString(uid) }, null, null, null);
+            Cursor c = db.query(TABLE_SETTINGS, new String[] { "_id" }, "packageName=?", 
+                    new String[] { packageName }, null, null, null);
             if (c != null && c.getCount() > 0 && c.moveToFirst()) {
                 int id = c.getInt(0);
                 db.delete(TABLE_ALLOWED_CONTACTS, "settings_id=?", new String[] { Integer.toString(id) });
                 c.close();
             }
             
-            if (db.delete(TABLE_SETTINGS, "_id=?", new String[] { packageName, uid + "" }) == 0) {
-                Log.e(TAG, "deleteSettings - database entry for " + packageName + " (" + uid + ") not found");
+            if (db.delete(TABLE_SETTINGS, "packageName=?", new String[] { packageName }) == 0) {
+                Log.e(TAG, "deleteSettings - database entry for " + packageName + " not found");
                 return false;
             }
             
             // delete settings from plain text file (for access from core libraries)
-            File settingsUidDir = new File("/data/system/privacy/" + packageName + "/" + uid + "/");
+//            File settingsUidDir = new File("/data/system/privacy/" + packageName + "/" + uid + "/");
             File settingsPackageDir = new File("/data/system/privacy/" + packageName + "/");
-            File systemLogsSettingFile = new File("/data/system/privacy/" + packageName + "/" + 
-                    uid + "/systemLogsSetting");
+            File systemLogsSettingFile = new File("/data/system/privacy/" + packageName + "/systemLogsSetting");
             // delete the setting files
             systemLogsSettingFile.delete();
             // delete the parent directories
-            settingsUidDir.delete();
+//            settingsUidDir.delete();
             if (settingsPackageDir.list() == null || settingsPackageDir.list().length == 0) settingsPackageDir.delete();
             // mark DB transaction successful (commit the changes)
             db.setTransactionSuccessful();
@@ -614,17 +614,14 @@ public class PrivacyPersistenceAdapter {
     }
     
     public boolean purgeSettings() {
-        // TODO: remove the allowed contacts if no corresponding entry in DB
         boolean result = true;
-        
 //        Log.d(TAG, "purgeSettings - begin purging settings");
-        
         // get installed apps
-        HashMap<String, Integer> apps = new HashMap<String, Integer>();
+        List<String> apps = new ArrayList<String>();
         PackageManager pMan = context.getPackageManager();
         List<ApplicationInfo> installedApps = pMan.getInstalledApplications(PackageManager.GET_META_DATA);
         for (ApplicationInfo appInfo : installedApps) { 
-            apps.put(appInfo.packageName, appInfo.uid);
+            apps.add(appInfo.packageName);
         }
         
 //        Log.d(TAG, "purgeSettings - purging directories");
@@ -634,40 +631,10 @@ public class PrivacyPersistenceAdapter {
             String packageName = packageDir.getName();
 //            Log.d(TAG, "purgeSettings - checking package directory " + packageName);
             
-            if (!apps.containsKey(packageName)) { // remove package dir if no such app installed
+            if (!apps.contains(packageName)) { // remove package dir if no such app installed
 //                Log.d(TAG, "purgeSettings - deleting " + packageName);
                 deleteRecursive(packageDir);
-            } else {
-                // for all UID dirs inside the package dir
-                for (File uidDir : packageDir.listFiles()) {
-//                    Log.d(TAG, "purgeSettings - checking UID directory " + uidDir.getName());
-                    try {
-                        int uid = Integer.parseInt(uidDir.getName()); // UID directory's name
-                        int appUid = apps.get(packageName); // installed app's UID
-                        if (appUid != uid) {
-//                            Log.d(TAG, "purgeSettings - installed application UID doesn't match " + appUid + " != " + uid);
-                            // try renaming to installed app's UID
-//                            Log.d(TAG, "purgeSettings - renaming " + uid + " to " + appUid);
-                            if (!uidDir.renameTo(new File(packageDir + "/" + appUid))) {
-//                                Log.d(TAG, "purgeSettings - renaming " + uid + " to " + appUid + " failed, deleting " + uid);
-                                // if renaming failed, the directory exists already -> delete
-                                deleteRecursive(uidDir);
-                            } else {
-//                                Log.d(TAG, "purgeSettings - renaming " + uid + " to " + appUid + " succeeded");
-                            }
-                        }
-                        // if no more UID dirs left (because of above deletion) remove package dir
-                        if (packageDir.listFiles() == null || packageDir.listFiles().length == 0) {
-//                            Log.d(TAG, "purgeSettings - empty package directory " + packageDir.getName() + ", deleting");
-                            deleteRecursive(packageDir);
-                        }
-                    } catch (NumberFormatException e) {
-                        // remove the UID dir if named inappropriately
-//                        Log.d(TAG, "purgeSettings - invalid dir, deleting " + uidDir.getName());
-                        deleteRecursive(uidDir);
-                    }
-                }
-            }
+            } 
         }
         
 //        Log.d(TAG, "purgeSettings - purging database");
@@ -676,25 +643,20 @@ public class PrivacyPersistenceAdapter {
         SQLiteDatabase db = getReadableDatabase();
         Cursor c = null;
         try {
-            c = query(db, TABLE_SETTINGS, new String[] {"packageName", "uid"}, null, null, null, null, null, null);
+            c = query(db, TABLE_SETTINGS, new String[] {"packageName"}, null, null, null, null, null, null);
 //            Log.d(TAG, "purgeSettings - found " + c.getCount() + " entries in the DB");
+            List<String> appsInDb = new ArrayList<String>();
             while (c.moveToNext()) {
                 String packageName = c.getString(0);
-                int uid = c.getInt(1);
-//                Log.d(TAG, "purgeSettings - checking package name " + packageName);
-                Integer appUid = apps.get(packageName); 
-                if (appUid == null) {
-//                    Log.d(TAG, "purgeSettings - package name " + packageName + " is not installed");
-                    deleteSettings(packageName, uid);
-//                    Log.d(TAG, "purgeSettings - deleting DB settings for " + packageName + " " + uid);
-                } else if (appUid != uid) {
-//                    Log.d(TAG, "purgeSettings - installed application UID doesn't match " + appUid + " != " + uid);
-                    // update privacy settings with the new UID
-                    PrivacySettings pSet = getSettings(packageName, uid, true);
-//                    Log.d(TAG, "purgeSettings - updating DB record " + packageName + " " + uid + " with new UID " + appUid + "; will update");
-                    if (pSet != null) {
-                        pSet.setUid(appUid);
-                        saveSettings(pSet);
+                if (!apps.contains(packageName)) {
+                    deleteSettings(packageName);
+                } else {
+                    if (appsInDb.contains(packageName)) { // if duplicate entry, remove all duplicates and keep only one
+                        PrivacySettings pSetTmp = getSettings(packageName, false);
+                        deleteSettings(packageName);
+                        saveSettings(pSetTmp);
+                    } else {
+                        appsInDb.add(packageName);
                     }
                 }
             }

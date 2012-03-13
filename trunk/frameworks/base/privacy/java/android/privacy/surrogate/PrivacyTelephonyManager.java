@@ -266,15 +266,15 @@ public final class PrivacyTelephonyManager extends TelephonyManager {
 
     @Override
     public void listen(PhoneStateListener listener, int events) {
-        Log.d(TAG, "listen - package:" + context.getPackageName() + " uid:" + Binder.getCallingUid() + " events: " + events);
+//        Log.d(TAG, "listen - package:" + context.getPackageName() + " uid:" + Binder.getCallingUid() + " events: " + events);
         if (((events & PhoneStateListener.LISTEN_CELL_LOCATION) != 0) ||
                 ((events & PhoneStateListener.LISTEN_CALL_STATE) != 0)) {
             listener.setContext(context);
             listener.setPackageName(context.getPackageName());
             listener.setUid(Binder.getCallingUid());
             super.listen(listener, events);
-            Log.d(TAG, "listen for cell location or call state - " + context.getPackageName() + " (" + 
-                    Binder.getCallingUid() + ") output: custom listener");
+//            Log.d(TAG, "listen for cell location or call state - " + context.getPackageName() + " (" + 
+//                    Binder.getCallingUid() + ") output: custom listener");
         } else {
             super.listen(listener, events);
         }

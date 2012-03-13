@@ -11,7 +11,6 @@ import java.io.File;
  * PrivacySettingsManager's counterpart running in the system process, which
  * allows write access to /data/
  * @author Anonymous
- * TODO: add ON/OFF API (allow notifications only after boot, if ON flag in database)
  * TODO: add selective contact access management API
  */
 public class PrivacySettingsManagerService extends IPrivacySettingsManager.Stub {
@@ -26,12 +25,11 @@ public class PrivacySettingsManagerService extends IPrivacySettingsManager.Stub 
     
     public static PrivacyFileObserver obs;
     
-    // TODO: set true if enabled, else false
     private boolean enabled;
     private boolean notificationsEnabled;
     private boolean bootCompleted;
     
-    private static final double VERSION = 1.31;
+    private static final double VERSION = 1.30;
     
     /**
      * @hide - this should be instantiated through Context.getSystemService
@@ -48,32 +46,32 @@ public class PrivacySettingsManagerService extends IPrivacySettingsManager.Stub 
         notificationsEnabled = persistenceAdapter.getValue(PrivacyPersistenceAdapter.SETTING_NOTIFICATIONS_ENABLED).equals(PrivacyPersistenceAdapter.VALUE_TRUE);
         bootCompleted = false;
     }
-
-    public PrivacySettings getSettings(String packageName, int uid) {
-//        Log.d(TAG, "getSettings - " + packageName + " UID: " + uid);
+    
+    public PrivacySettings getSettings(String packageName) {
+        Log.d(TAG, "getSettings - " + packageName);
         if (enabled || context.getPackageName().equals("com.privacy.pdroid")) 
-            return persistenceAdapter.getSettings(packageName, uid, false);
+            return persistenceAdapter.getSettings(packageName, false);
         else return null;
     }
 
     public boolean saveSettings(PrivacySettings settings) {
-//        Log.d(TAG, "saveSettings - checking if caller (UID: " + Binder.getCallingUid() + ") has sufficient permissions");
+        Log.d(TAG, "saveSettings - checking if caller (UID: " + Binder.getCallingUid() + ") has sufficient permissions");
         // check permission if not being called by the system process
         if (Binder.getCallingUid() != 1000) 
             context.enforceCallingPermission(WRITE_PRIVACY_SETTINGS, "Requires WRITE_PRIVACY_SETTINGS");
-//        Log.d(TAG, "saveSettings - " + settings);
+        Log.d(TAG, "saveSettings - " + settings);
         boolean result = persistenceAdapter.saveSettings(settings);
         if (result == true) obs.addObserver(settings.getPackageName());
         return result;
     }
-
-    public boolean deleteSettings(String packageName, int uid) {
+    
+    public boolean deleteSettings(String packageName) {
 //        Log.d(TAG, "deleteSettings - " + packageName + " UID: " + uid + " " +
 //        		"checking if caller (UID: " + Binder.getCallingUid() + ") has sufficient permissions");
         // check permission if not being called by the system process
         if (Binder.getCallingUid() != 1000)
             context.enforceCallingPermission(WRITE_PRIVACY_SETTINGS, "Requires WRITE_PRIVACY_SETTINGS");
-        boolean result = persistenceAdapter.deleteSettings(packageName, uid);
+        boolean result = persistenceAdapter.deleteSettings(packageName);
         // update observer if directory exists
         String observePath = PrivacyPersistenceAdapter.SETTINGS_DIRECTORY + "/" + packageName;
         if (new File(observePath).exists() && result == true) {
@@ -87,13 +85,13 @@ public class PrivacySettingsManagerService extends IPrivacySettingsManager.Stub 
     public double getVersion() {
         return VERSION;
     }
-
-    public void notification(final String packageName, final int uid, final byte accessMode, final String dataType, final String output) {
+    
+    public void notification(final String packageName, final byte accessMode, final String dataType, final String output) {
         if (bootCompleted && notificationsEnabled) {
             Intent intent = new Intent();
             intent.setAction(PrivacySettingsManager.ACTION_PRIVACY_NOTIFICATION);
             intent.putExtra("packageName", packageName);
-            intent.putExtra("uid", uid);
+            intent.putExtra("uid", PrivacyPersistenceAdapter.DUMMY_UID);
             intent.putExtra("accessMode", accessMode);
             intent.putExtra("dataType", dataType);
             intent.putExtra("output", output);

@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 /**
  * Provides privacy handling for {@link java.lang.ProcessManager}
  * @author Anonymous
+ * TODO: test if this works, also test it with root apps
  */
 public class PrivacyProcessManager {
     
@@ -26,11 +27,11 @@ public class PrivacyProcessManager {
      */
     public static boolean hasPrivacyPermission(String setting, int pid) {
         String packageName = null;
-        String uid = null;
+//        String uid = null;
         boolean output = true;
         try {
             packageName = getPackageName();
-            uid = getUid();
+//            uid = getUid();
         } catch (Exception e) {
             System.err.println("PrivacyProcessManager: could not find package name or UID");
             e.printStackTrace();
@@ -57,7 +58,7 @@ public class PrivacyProcessManager {
             // check if logs are being read
             if (proc != null && proc.trim().length() > 5 && proc.contains("logcat")) {
                 // get setting value
-                String settingsFilePath = "/data/system/privacy/" + packageName + "/" + uid + "/" + setting;
+                String settingsFilePath = "/data/system/privacy/" + packageName + /*"/" + uid +*/ "/" + setting;
 //                System.err.println("PrivacyProcessManager - hasPrivacyPermission: creating settings file FileReader for " + settingsFilePath);
                 freader = new PrivacyFileReader(settingsFilePath);
 //                System.err.println("PrivacyProcessManager - hasPrivacyPermission: reading first line from " + settingsFilePath);
@@ -96,22 +97,28 @@ public class PrivacyProcessManager {
      * @return Current process' UID
      * @throws IOException, FileNotFoundException, NumberFormatException, Exception
      */
-    private static String getUid() throws IOException, FileNotFoundException, 
-            NumberFormatException, Exception {
-        PrivacyFileReader freader = new PrivacyFileReader("/proc/self/cgroup");
-        String uid = null;
-        String line = "";
-        while (!line.contains("/uid/")) line = freader.readLine();
-        freader.close();
-        if (line != null) {
-            int index = line.indexOf("/uid/");
-            index += "/uid/".length();
-            // make sure the found UID is an int and convert it back to string
-            uid = Integer.parseInt(line.substring(index).trim()) + "";
-        }
-        if (uid != null) return uid;
-        else throw new Exception();
-    }
+//    private static String getUid() throws IOException, FileNotFoundException, 
+//            NumberFormatException, Exception {
+//        PrivacyFileReader freader;
+//        try {
+//            freader = new PrivacyFileReader("/proc/self/cgroup");
+//        } catch (FileNotFoundException e) {
+//            // this is most likely root (UID 0)
+//            return "0";
+//        }
+//        String uid = null;
+//        String line = "";
+//        while (!line.contains("/uid/")) line = freader.readLine();
+//        freader.close();
+//        if (line != null) {
+//            int index = line.indexOf("/uid/");
+//            index += "/uid/".length();
+//            // make sure the found UID is an int and convert it back to string
+//            uid = Integer.parseInt(line.substring(index).trim()) + "";
+//        }
+//        if (uid != null) return uid;
+//        else throw new Exception();
+//    }
     
     public static class PrivacyFileReader {
         

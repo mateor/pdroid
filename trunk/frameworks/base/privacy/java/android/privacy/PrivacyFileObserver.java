@@ -50,17 +50,17 @@ public class PrivacyFileObserver extends FileObserver {
             
             // get the package and UID of accessing application
             String packageName = tokenizer.nextToken();
-            int uid = 0;
-            try {
-                uid = Integer.parseInt(tokenizer.nextToken());
-            } catch (NumberFormatException e) {
-                Log.e(TAG, "onEvent - could not get the UID of accessing application", e);
-                // we still can continue, UID is optional here
-            }
+//            int uid = 0;
+//            try {
+//                uid = Integer.parseInt(tokenizer.nextToken());
+//            } catch (NumberFormatException e) {
+//                Log.e(TAG, "onEvent - could not get the UID of accessing application", e);
+//                // we still can continue, UID is optional here
+//            }
             
             // read the setting
-            PrivacySettings pSet = pSetManServ.getSettings(packageName, uid);
-            pSetManServ.notification(packageName, uid, pSet.getSystemLogsSetting(), PrivacySettings.DATA_SYSTEM_LOGS, null);
+            PrivacySettings pSet = pSetManServ.getSettings(packageName);
+            pSetManServ.notification(packageName, pSet.getSystemLogsSetting(), PrivacySettings.DATA_SYSTEM_LOGS, null);
         }
         
     }
