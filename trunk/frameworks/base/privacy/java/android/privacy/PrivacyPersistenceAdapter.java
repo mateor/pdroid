@@ -171,7 +171,6 @@ public class PrivacyPersistenceAdapter {
             case 2:
                 try {
                     if (db != null && db.isOpen()) {
-//                        db.execSQL("ALTER TABLE " + TABLE_SETTINGS + " ADD COLUMN intentBootCompletedSetting INTEGER;");
                         db.execSQL("DROP TABLE IF EXISTS " + TABLE_VERSION + ";");
                         db.execSQL(CREATE_TABLE_ALLOWED_CONTACTS); 
                         db.execSQL(CREATE_TABLE_MAP);
@@ -196,16 +195,19 @@ public class PrivacyPersistenceAdapter {
                             }
                         }
                         
-                        purgeSettings();
-                        
                         db.setTransactionSuccessful();
                     }
                 } catch (Exception e) {
-                    if (db != null && db.isOpen()) db.close();
+                    if (db != null && db.isOpen()) {
+                        db.endTransaction();
+                        db.close();
+                    }
                     Log.w(TAG, "upgradeDatabase - could not upgrade DB; will restore backup", e);
                     FileUtils.copyFile(dbBackupFile, dbFile);
                     dbBackupFile.delete();
                 }
+                
+                
                 break;
                 
             case 3:
@@ -217,7 +219,11 @@ public class PrivacyPersistenceAdapter {
         if (db != null && db.isOpen()) {
             db.endTransaction();
             db.close();
+        } else {
+            Log.e(TAG, "upgradeDatabase - database is null or closed; cant call endTransaction()");
         }
+        
+        purgeSettings();
     }
     
     private int getDbVersion() {
@@ -659,6 +665,12 @@ public class PrivacyPersistenceAdapter {
         return c;
     }
     
+    /**
+     * Removes obsolete entries from the DB and file system. Should not be used in methods, which rely on the DB
+     * being open after this method has finished. It will close the DB if no other threads has increased
+     * the readingThread count.
+     * @return true if purge was successful, false otherwise.
+     */
     public boolean purgeSettings() {
         boolean result = true;
 //        Log.d(TAG, "purgeSettings - begin purging settings");
