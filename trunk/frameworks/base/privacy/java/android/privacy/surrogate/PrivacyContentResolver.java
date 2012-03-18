@@ -33,8 +33,7 @@ public final class PrivacyContentResolver {
      * @param context
      * @param realCursor
      */
-    public static Cursor enforcePrivacyPermission(IContentProvider provider, Uri uri, String[] projection,
-            String selection, String[] selectionArgs, String sortOrder, Context context, Cursor realCursor) throws RemoteException {
+    public static Cursor enforcePrivacyPermission(Uri uri, String[] projection, Context context, Cursor realCursor) throws RemoteException {
 //    public static Cursor enforcePrivacyPermission(Uri uri, Context context, Cursor realCursor) {
         if (uri != null) {
             if (pSetMan == null) pSetMan = (PrivacySettingsManager) context.getSystemService("privacy");
@@ -67,20 +66,24 @@ public final class PrivacyContentResolver {
                                     }
                                 }
                                 
-                                if (!idFound) { // add ID to projection
-                                    String[] newProjection = new String[projection.length + 1];
-                                    System.arraycopy(projection, 0, newProjection, 0, projection.length);
-                                    newProjection[projection.length] = ContactsContract.Contacts._ID;
-                                    projection = newProjection;
-                                }
+//                                if (!idFound) { // add ID to projection
+//                                    String[] newProjection = new String[projection.length + 1];
+//                                    System.arraycopy(projection, 0, newProjection, 0, projection.length);
+//                                    newProjection[projection.length] = ContactsContract.Contacts._ID;
+//                                    projection = newProjection;
+//                                }
                             }
                             
+                            if (!idFound) {
+                                output = new PrivacyCursor();
+                            } else {
 //                            Log.d(TAG, "enforcePrivacyPermission - new projection: " + arrayToString(projection) + " selection: " + selection + " selectionArgs: " + arrayToString(selectionArgs));
                             
                             // re-query
-                            output = provider.query(uri, projection, selection, selectionArgs, sortOrder);
+//                            output = provider.query(uri, projection, selection, selectionArgs, sortOrder);
 //                            Log.d(TAG, "enforcePrivacyPermission - new cursor entries: " + output.getCount());
-                            output = new PrivacyCursor(output, pSet.getAllowedContacts());
+                                output = new PrivacyCursor(output, pSet.getAllowedContacts());
+                            }
                             pSetMan.notification(packageName, uid, PrivacySettings.CUSTOM, PrivacySettings.DATA_CONTACTS, null, pSet);
                         } else { // REAL
                             pSetMan.notification(packageName, uid, PrivacySettings.REAL, PrivacySettings.DATA_CONTACTS, null, pSet);

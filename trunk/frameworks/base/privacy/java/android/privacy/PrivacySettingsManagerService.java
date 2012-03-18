@@ -29,7 +29,7 @@ public class PrivacySettingsManagerService extends IPrivacySettingsManager.Stub 
     private boolean notificationsEnabled;
     private boolean bootCompleted;
     
-    private static final double VERSION = 1.30;
+    private static final double VERSION = 1.32;
     
     /**
      * @hide - this should be instantiated through Context.getSystemService
@@ -48,7 +48,7 @@ public class PrivacySettingsManagerService extends IPrivacySettingsManager.Stub 
     }
     
     public PrivacySettings getSettings(String packageName) {
-        Log.d(TAG, "getSettings - " + packageName);
+//        Log.d(TAG, "getSettings - " + packageName);
         if (enabled || context.getPackageName().equals("com.privacy.pdroid")) 
             return persistenceAdapter.getSettings(packageName, false);
         else return null;

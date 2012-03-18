@@ -265,8 +265,7 @@ public abstract class ContentResolver {
             Cursor qCursor = provider.query(uri, projection, selection, selectionArgs, sortOrder);
             // BEGIN privacy-added
 //            qCursor = PrivacyContentResolver.enforcePrivacyPermission(uri, mContext, qCursor);
-            qCursor = PrivacyContentResolver.enforcePrivacyPermission(provider, uri, projection, selection, 
-                    selectionArgs, sortOrder, mContext, qCursor);
+            qCursor = PrivacyContentResolver.enforcePrivacyPermission(uri, projection, mContext, qCursor);
             // END privacy-added
             if (qCursor == null) {
                 releaseProvider(provider);
